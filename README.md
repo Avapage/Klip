@@ -8,13 +8,12 @@ Klip is an Android video and audio downloader that uses [yt-dlp](https://github.
 
 ## Download Klip for Android
 
-The three most recent **0.2.5 preview revisions** are listed below. Choose R4 for the latest features.
+The two most recent **0.2.5 preview revisions** are listed below. Choose R4 for the latest features.
 
 | Revision | What changed | Download |
 | --- | --- | --- |
-| **R4** | Shows the completed file in Klip with a button to open or play it. Includes the changes in R3 and R2. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-ARM64.apk) |
-| **R3** | Adds parallel downloads for supported HLS/DASH segments. Includes the changes in R2. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R3-ARM64.apk) |
-| **R2** | Restores the original media selection list and adds optional browser pop-up and basic ad-domain blocking. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R2-ARM64.apk) |
+| **R4** | Shows the completed file in Klip with a button to open or play it. Includes the changes in R3. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-ARM64.apk) |
+| **R3** | Adds parallel downloads for supported HLS/DASH segments. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R3-ARM64.apk) |
 
 ARM64 is suitable for most modern Android phones. **ARMv7**, **x86_64**, and **universal** APKs for these revisions are available on the [release page](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5).
 
