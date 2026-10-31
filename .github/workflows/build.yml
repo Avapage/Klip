@@ -44,11 +44,11 @@ jobs:
           cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk /tmp/klip-apks/Klip-0.2.5-R4-ARMv7.apk
           cp app/build/outputs/apk/debug/app-x86_64-debug.apk /tmp/klip-apks/Klip-0.2.5-R4-x86_64.apk
           cp app/build/outputs/apk/debug/app-universal-debug.apk /tmp/klip-apks/Klip-0.2.5-R4-Universal.apk
+          # When preparing a future build, list only the two newest revisions in the notes.
           cat > /tmp/klip-notes.md <<'NOTES'
           ## Klip for Android
           Klip helps you save video and audio directly to your device. Requires Android 10 or newer. The two most recent preview revisions are R4 and R3. Choose R4 for the newest features.
 
-          # When preparing a future build, list only the two newest revisions below.
           ### Recent revisions
           - **R4:** Shows completed downloads with an open or play button; includes R3.
           - **R3:** Adds parallel downloads for supported HLS/DASH segments.
