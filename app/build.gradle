@@ -10,6 +10,21 @@ android {
         versionName '0.2.5'
         ndk { abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64' }
     }
+    signingConfigs {
+        release {
+            if (System.getenv('KLIP_KEYSTORE_PATH')) {
+                storeFile file(System.getenv('KLIP_KEYSTORE_PATH'))
+                storePassword System.getenv('KLIP_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KLIP_KEY_ALIAS')
+                keyPassword System.getenv('KLIP_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (System.getenv('KLIP_KEYSTORE_PATH')) signingConfig signingConfigs.release
+        }
+    }
     splits {
         abi {
             enable true

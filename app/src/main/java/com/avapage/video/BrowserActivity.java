@@ -109,7 +109,18 @@ public class BrowserActivity extends Activity {
         ArrayList<String> results; synchronized(links) { results=new ArrayList<>(links); }
         if(results.isEmpty()) { Toast.makeText(this,"Belum ada media terdeteksi. Putar videonya dahulu.",Toast.LENGTH_LONG).show(); return; }
         CharSequence[] labels=new CharSequence[results.size()];
-        for(int i=0;i<results.size();i++) { Uri u=Uri.parse(results.get(i)); String p=u.getLastPathSegment(); labels[i]=(p==null?"Media":p)+"  ·  "+u.getHost(); }
+        for(int i=0;i<results.size();i++) {
+            Uri u=Uri.parse(results.get(i)); String p=u.getLastPathSegment();
+            String path=u.getPath()==null?"":u.getPath().toLowerCase(Locale.ROOT);
+            String kind=path.endsWith(".m3u8")?"HLS stream":path.endsWith(".mpd")?"DASH stream":
+                (path.endsWith(".mp3") || path.endsWith(".m4a"))?"Audio":"Media";
+            String name=(p==null || p.isEmpty())?"Unknown file":p;
+            String parent=u.getEncodedPath();
+            if(parent==null) parent="";
+            if(parent.length()>75) parent="…"+parent.substring(parent.length()-75);
+            String query=u.getEncodedQuery()==null?"":" · query parameters present";
+            labels[i]=(i+1)+". "+kind+" · "+name+"\n"+u.getHost()+parent+query;
+        }
         new AlertDialog.Builder(this).setTitle("Pilih tautan media").setItems(labels,(d,n) -> {
             String selected=results.get(n); String ref; synchronized(links) { ref=referers.get(selected); }
             if(ref==null || ref.isEmpty()) ref=web.getUrl();

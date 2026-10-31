@@ -204,6 +204,9 @@ public class MainActivity extends Activity {
         });
     }
     private SavedFile saveToDownloads(File file) throws IOException {
+        File external = getExternalFilesDir(null);
+        if (external != null && external.getUsableSpace() < file.length())
+            throw new IOException("Penyimpanan tidak cukup untuk menyimpan file. Kosongkan ruang lalu coba lagi.");
         ContentValues values = new ContentValues();
         values.put(MediaStore.Downloads.DISPLAY_NAME,file.getName());
         int dot=file.getName().lastIndexOf('.');
