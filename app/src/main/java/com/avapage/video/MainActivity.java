@@ -28,6 +28,8 @@ public class MainActivity extends Activity {
     private EditText link;
     private TextView status, preview;
     private ProgressBar progress;
+    private LinearLayout resultList;
+    private ScrollView screen;
     private Spinner format;
     private Button start, update, inspect, cancel;
     private volatile boolean ready = false;
@@ -77,9 +79,9 @@ public class MainActivity extends Activity {
     private GradientDrawable rounded(int color, int radius) { GradientDrawable d=new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(radius)); return d; }
     private void buildUi() {
         int white = Color.rgb(240,243,255), muted = Color.rgb(165,177,199);
-        ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true); scroll.setBackgroundColor(Color.rgb(13,17,31));
+        ScrollView scroll = new ScrollView(this); screen=scroll; scroll.setFillViewport(true); scroll.setBackgroundColor(Color.rgb(13,17,31));
         LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(22),dp(28),dp(22),dp(36)); scroll.addView(root); setContentView(scroll);
-        TextView badge = text("KLIP  /  0.2.5 R3", 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
+        TextView badge = text("KLIP  /  0.2.5 R4", 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
         TextView title = text("Simpan yang\npenting.", 36, white); title.setTypeface(Typeface.DEFAULT,Typeface.BOLD); title.setPadding(0,dp(16),0,dp(12)); root.addView(title);
         TextView intro = text("Klip mengambil video dan audio langsung ke perangkatmu.", 16, muted); intro.setPadding(0,0,0,dp(28)); root.addView(intro);
         TextView label = text("TAUTAN VIDEO", 12, muted); root.addView(label);
@@ -95,6 +97,8 @@ public class MainActivity extends Activity {
         cancel = new Button(this); cancel.setText("Batalkan unduhan"); cancel.setVisibility(View.GONE); root.addView(cancel); cancel.setOnClickListener(v -> { cancelRequested=true; cancel.setEnabled(false); show("Membatalkan unduhan..."); new Thread(() -> YoutubeDL.getInstance().destroyProcessById(processId)).start(); });
         progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal); progress.setMax(100); root.addView(progress);
         status = text("Menyiapkan aplikasi...", 14, muted); status.setTextIsSelectable(true); status.setPadding(0,16,0,0); root.addView(status);
+        resultList=new LinearLayout(this); resultList.setOrientation(LinearLayout.VERTICAL); resultList.setVisibility(View.GONE);
+        resultList.setPadding(dp(16),dp(14),dp(16),dp(14)); resultList.setBackground(rounded(Color.rgb(25,34,49),14)); root.addView(resultList);
         update = new Button(this); update.setText("Pembaruan mesin"); root.addView(update); update.setOnClickListener(v -> chooseUpdate());
         TextView note = text("Hasil disimpan di Downloads / Klip. Biarkan aplikasi terbuka selama unduhan.", 13, muted); note.setPadding(0,dp(24),0,0); root.addView(note);
     }
@@ -128,6 +132,31 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> preview.setText(name+uploader+"\n"+duration)); show("Info video siap. Pilih format dan mulai download.");
         } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nLo tetap bisa mencoba download langsung."); } finally { runOnUiThread(() -> setBusy(false)); } });
     }
+    private static class SavedFile {
+        final Uri uri; final String name; final String mime;
+        SavedFile(Uri uri,String name,String mime) { this.uri=uri; this.name=name; this.mime=mime; }
+    }
+    private void displayResults(java.util.List<SavedFile> files) {
+        runOnUiThread(() -> {
+            resultList.removeAllViews();
+            TextView heading=text("HASIL DOWNLOAD",12,Color.rgb(125,231,204)); resultList.addView(heading);
+            for(SavedFile file:files) {
+                TextView filename=text(file.name,15,Color.rgb(240,243,255)); filename.setPadding(0,dp(10),0,dp(4)); resultList.addView(filename);
+                Button open=new Button(this); open.setText(file.mime.startsWith("video/")?"Putar video":file.mime.startsWith("audio/")?"Putar audio":"Buka file");
+                open.setOnClickListener(v -> {
+                    Intent intent=new Intent(Intent.ACTION_VIEW); intent.setDataAndType(file.uri,file.mime);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    try { startActivity(intent); }
+                    catch(android.content.ActivityNotFoundException e) { Toast.makeText(this,"Tidak ada aplikasi yang bisa membuka format ini. File tetap ada di Downloads/Klip.",Toast.LENGTH_LONG).show(); }
+                    catch(SecurityException e) { Toast.makeText(this,"File tidak bisa dibuka. Cek kembali di Downloads/Klip.",Toast.LENGTH_LONG).show(); }
+                });
+                resultList.addView(open);
+            }
+            TextView location=text("Tersimpan di Downloads / Klip",12,Color.rgb(165,177,199)); location.setPadding(0,dp(6),0,0); resultList.addView(location);
+            resultList.setVisibility(View.VISIBLE);
+            screen.post(() -> screen.smoothScrollTo(0,resultList.getTop()));
+        });
+    }
     private void download() {
         String url=validUrl(); if(url==null) return;
         final int selected=format.getSelectedItemPosition();
@@ -135,9 +164,11 @@ public class MainActivity extends Activity {
         final String contextAgent=url.equals(browserUrl)?browserUserAgent:null;
         final String contextCookies=url.equals(browserUrl)?browserCookies:null;
         downloading=true; cancelRequested=false;
+        resultList.removeAllViews(); resultList.setVisibility(View.GONE);
         setBusy(true); progress.setProgress(0); show("Menyiapkan unduhan...");
         worker.execute(() -> {
             File dir=new File(getCacheDir(), "job-"+System.currentTimeMillis());
+            java.util.ArrayList<SavedFile> saved=new java.util.ArrayList<>();
             try {
                 if(!dir.mkdirs()) throw new IOException("Tidak bisa menyiapkan penyimpanan sementara");
                 YoutubeDLRequest request = new YoutubeDLRequest(url);
@@ -164,27 +195,38 @@ public class MainActivity extends Activity {
                 if(cancelRequested) throw new IOException("Dibatalkan");
                 File[] files=dir.listFiles(f -> f.isFile() && !f.getName().equals(".cookies.txt") && !f.getName().endsWith(".part") && !f.getName().endsWith(".ytdl"));
                 if(files==null || files.length==0) throw new IOException("Tidak ada file yang dihasilkan");
-                for(File file:files) saveToDownloads(file);
+                for(File file:files) saved.add(saveToDownloads(file));
                 show("Selesai! File disimpan di Downloads/Klip.");
+                displayResults(saved);
                 runOnUiThread(() -> progress.setProgress(100));
-            } catch(Exception e) { show(cancelRequested ? "Unduhan dibatalkan." : message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Unduhan gagal: " + message(e) + "\nCoba update mesin atau gunakan tautan lain."); }
+            } catch(Exception e) { if(!saved.isEmpty()) displayResults(saved); show(!saved.isEmpty() ? "Sebagian file sudah tersimpan. File lain gagal disimpan: " + message(e) : cancelRequested ? "Unduhan dibatalkan." : message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Unduhan gagal: " + message(e) + "\nCoba update mesin atau gunakan tautan lain."); }
             finally { File[] files=dir.listFiles(); if(files!=null) for(File f:files) f.delete(); dir.delete(); downloading=false; runOnUiThread(() -> setBusy(false)); }
         });
     }
-    private void saveToDownloads(File file) throws IOException {
+    private SavedFile saveToDownloads(File file) throws IOException {
         ContentValues values = new ContentValues();
         values.put(MediaStore.Downloads.DISPLAY_NAME,file.getName());
-        String ext=android.webkit.MimeTypeMap.getFileExtensionFromUrl(file.getName());
-        String mime=android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase(java.util.Locale.ROOT));
-        values.put(MediaStore.Downloads.MIME_TYPE,mime==null?"application/octet-stream":mime);
+        int dot=file.getName().lastIndexOf('.');
+        String ext=dot>=0?file.getName().substring(dot+1).toLowerCase(java.util.Locale.ROOT):"";
+        String mime=android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+        if(mime==null) mime="application/octet-stream";
+        values.put(MediaStore.Downloads.MIME_TYPE,mime);
         values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/Klip");
         values.put(MediaStore.Downloads.IS_PENDING,1);
         Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
         if(uri==null) throw new IOException("Tidak bisa membuat file di Downloads");
-        try (InputStream in=new FileInputStream(file); OutputStream out=getContentResolver().openOutputStream(uri)) {
-            if(out==null) throw new IOException("Tidak bisa membuka file tujuan");
-            byte[] buf=new byte[65536]; int n; while((n=in.read(buf))!=-1) out.write(buf,0,n);
-            ContentValues done=new ContentValues(); done.put(MediaStore.Downloads.IS_PENDING,0); getContentResolver().update(uri,done,null,null);
-        } catch (IOException e) { getContentResolver().delete(uri,null,null); throw e; }
+        try {
+            try (InputStream in=new FileInputStream(file); OutputStream out=getContentResolver().openOutputStream(uri)) {
+                if(out==null) throw new IOException("Tidak bisa membuka file tujuan");
+                byte[] buf=new byte[65536]; int n; while((n=in.read(buf))!=-1) out.write(buf,0,n);
+            }
+            ContentValues done=new ContentValues(); done.put(MediaStore.Downloads.IS_PENDING,0);
+            if(getContentResolver().update(uri,done,null,null)!=1) throw new IOException("Tidak bisa menyelesaikan penyimpanan");
+        } catch (IOException | RuntimeException e) { getContentResolver().delete(uri,null,null); throw e; }
+        String displayName=file.getName();
+        try (android.database.Cursor cursor=getContentResolver().query(uri,new String[]{MediaStore.Downloads.DISPLAY_NAME},null,null,null)) {
+            if(cursor!=null && cursor.moveToFirst()) displayName=cursor.getString(0);
+        } catch(RuntimeException ignored) { }
+        return new SavedFile(uri,displayName,mime);
     }
 }
