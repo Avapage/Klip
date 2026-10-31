@@ -40,13 +40,13 @@ jobs:
           current="$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)"
           if [ "$current" != "$GITHUB_SHA" ]; then echo "Skipping outdated build"; exit 0; fi
           mkdir -p /tmp/klip-apks
-          cp app/build/outputs/apk/debug/app-arm64-v8a-debug.apk /tmp/klip-apks/Klip-0.2.5-R2-ARM64.apk
-          cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk /tmp/klip-apks/Klip-0.2.5-R2-ARMv7.apk
-          cp app/build/outputs/apk/debug/app-x86_64-debug.apk /tmp/klip-apks/Klip-0.2.5-R2-x86_64.apk
-          cp app/build/outputs/apk/debug/app-universal-debug.apk /tmp/klip-apks/Klip-0.2.5-R2-Universal.apk
+          cp app/build/outputs/apk/debug/app-arm64-v8a-debug.apk /tmp/klip-apks/Klip-0.2.5-R3-ARM64.apk
+          cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk /tmp/klip-apks/Klip-0.2.5-R3-ARMv7.apk
+          cp app/build/outputs/apk/debug/app-x86_64-debug.apk /tmp/klip-apks/Klip-0.2.5-R3-x86_64.apk
+          cp app/build/outputs/apk/debug/app-universal-debug.apk /tmp/klip-apks/Klip-0.2.5-R3-Universal.apk
           cat > /tmp/klip-notes.md <<'NOTES'
           ## Klip for Android
-          Klip helps you save video and audio directly to your device. Requires Android 10 or newer. Download files marked R2 for the revised media picker and browser ad protection. Files without R2 are earlier builds.
+          Klip helps you save video and audio directly to your device. Requires Android 10 or newer. Download files marked R3 for the latest revision, including faster segmented downloads. Files marked R2 or without a revision marker are earlier builds.
 
           ### Choose your APK
           - **ARM64:** for most modern Android phones, including Xiaomi 14.
@@ -55,7 +55,7 @@ jobs:
           - **Universal:** includes all three architectures if you are unsure.
 
           ### Features
-          Video quality and audio options, video information lookup, HTML5 and JW Player media detection, optional browser pop-up and basic ad-domain blocking, cancellation, and automatic yt-dlp update checks. The built-in blocklist is limited and may not block all ads. Downloads run on your device without a Klip download server.
+          Video quality and audio options, video information lookup, HTML5 and JW Player media detection, optional browser pop-up and basic ad-domain blocking, parallel HLS/DASH fragment downloads, cancellation, and automatic yt-dlp update checks. The built-in blocklist is limited and may not block all ads. Downloads run on your device without a Klip download server.
 
           ### Installation
           Download the matching APK and open it on your Android device. Allow installation from the selected source if Android asks. This is a **debug preview** that has not been tested on every device. If Android rejects an update because its signing key differs, uninstall the old version before installing the new one. Existing downloads in your Downloads folder are not removed by the app.

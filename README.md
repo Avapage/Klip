@@ -8,6 +8,7 @@ Klip is a preview Android app for downloading video and audio directly on your d
 - Video title and duration lookup when supported.
 - Built-in browser that detects some direct video, audio, HLS and DASH links.
 - Browser protection against pop-up windows and requests to a small, built-in list of advertising domains. It can be switched off in the browser and does not block every ad.
+- Downloads up to eight HLS/DASH fragments concurrently when the downloader and source support it. Speed depends on the network and source; direct files may not become faster.
 - Cancel downloads and update the yt-dlp engine from the app.
 - Downloads are saved to Downloads/Klip.
 
@@ -15,7 +16,7 @@ When you choose a detected media link, the app passes the observed referrer, use
 
 ## Download and install
 
-Open the repository's Releases page and choose an APK marked R2; files without R2 are older builds. **ARM64** is suitable for most modern Android phones; **ARMv7** is for compatible 32-bit devices; **x86_64** is for x86-64 devices or emulators. Choose **Universal** if unsure.
+Open the repository's Releases page and choose an APK marked R3; files marked R2 or without a revision marker are older builds. **ARM64** is suitable for most modern Android phones; **ARMv7** is for compatible 32-bit devices; **x86_64** is for x86-64 devices or emulators. Choose **Universal** if unsure.
 
 Download the APK directly and open it on your phone. Allow installation from that source if Android asks. This is a debug preview. If Android rejects an update because the signing key differs, uninstall the old version first. Existing files in Downloads are not deleted by the app.
 
