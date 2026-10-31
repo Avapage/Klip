@@ -22,7 +22,7 @@ Choose a **0.2.5 R4** APK for your device. Older assets without R4 are previous 
 ## Features
 
 - Download supported video or extract audio as MP3 or its original format.
-- Choose a maximum video quality of 1080p, 720p, or 480p, where available.
+- Choose a preferred video quality of 1080p, 720p, or 480p. If a matching format is unavailable, Klip may fall back to another quality.
 - Browse websites within the app and detect some direct video, audio, HLS `.m3u8`, and DASH `.mpd` links.
 - Reduce some pop-ups and requests to known advertising domains using the built-in browser protection.
 - Download up to eight HLS/DASH fragments concurrently when the source and downloader support it.
