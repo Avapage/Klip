@@ -40,10 +40,10 @@ jobs:
           current="$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)"
           if [ "$current" != "$GITHUB_SHA" ]; then echo "Skipping outdated build"; exit 0; fi
           mkdir -p /tmp/klip-apks
-          cp app/build/outputs/apk/debug/app-arm64-v8a-debug.apk /tmp/klip-apks/Klip-0.2.4-ARM64.apk
-          cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk /tmp/klip-apks/Klip-0.2.4-ARMv7.apk
-          cp app/build/outputs/apk/debug/app-x86_64-debug.apk /tmp/klip-apks/Klip-0.2.4-x86_64.apk
-          cp app/build/outputs/apk/debug/app-universal-debug.apk /tmp/klip-apks/Klip-0.2.4-Universal.apk
+          cp app/build/outputs/apk/debug/app-arm64-v8a-debug.apk /tmp/klip-apks/Klip-0.2.5-ARM64.apk
+          cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk /tmp/klip-apks/Klip-0.2.5-ARMv7.apk
+          cp app/build/outputs/apk/debug/app-x86_64-debug.apk /tmp/klip-apks/Klip-0.2.5-x86_64.apk
+          cp app/build/outputs/apk/debug/app-universal-debug.apk /tmp/klip-apks/Klip-0.2.5-Universal.apk
           cat > /tmp/klip-notes.md <<'NOTES'
           ## Klip for Android
           Klip helps you save video and audio directly to your device. Requires Android 10 or newer.
@@ -55,15 +55,15 @@ jobs:
           - **Universal:** includes all three architectures if you are unsure.
 
           ### Features
-          Video quality and audio options, video information lookup, HTML5 and JW Player media detection, cancellation, and automatic yt-dlp update checks. Downloads run on your device without a Klip download server.
+          Video quality and audio options, video information lookup, HTML5 and JW Player media detection, recommended HLS master playlists, manual alternative source selection, cancellation, and automatic yt-dlp update checks. Downloads run on your device without a Klip download server.
 
           ### Installation
           Download the matching APK and open it on your Android device. Allow installation from the selected source if Android asks. This is a **debug preview** that has not been tested on every device. If Android rejects an update because its signing key differs, uninstall the old version before installing the new one. Existing downloads in your Downloads folder are not removed by the app.
 
           Not every site or video is supported. Special authentication, DRM protection, or site changes can prevent downloads. Keep Klip open while downloading. Download content only where you have permission.
           NOTES
-          if gh release view klip-v0.2.4 >/dev/null 2>&1; then
-            gh release upload klip-v0.2.4 /tmp/klip-apks/*.apk --clobber
+          if gh release view klip-v0.2.5 >/dev/null 2>&1; then
+            gh release upload klip-v0.2.5 /tmp/klip-apks/*.apk --clobber
           else
-            gh release create klip-v0.2.4 /tmp/klip-apks/*.apk --target "$GITHUB_SHA" --prerelease --title "Klip 0.2.4 for Android" --notes-file /tmp/klip-notes.md
+            gh release create klip-v0.2.5 /tmp/klip-apks/*.apk --target "$GITHUB_SHA" --prerelease --title "Klip 0.2.5 for Android" --notes-file /tmp/klip-notes.md
           fi
