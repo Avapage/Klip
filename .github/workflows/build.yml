@@ -46,12 +46,12 @@ jobs:
           cp app/build/outputs/apk/debug/app-universal-debug.apk /tmp/klip-apks/Klip-0.2.5-R4-Universal.apk
           cat > /tmp/klip-notes.md <<'NOTES'
           ## Klip for Android
-          Klip helps you save video and audio directly to your device. Requires Android 10 or newer. The three most recent preview revisions are R4, R3 and R2. Choose R4 for the newest features.
+          Klip helps you save video and audio directly to your device. Requires Android 10 or newer. The two most recent preview revisions are R4 and R3. Choose R4 for the newest features.
 
+          # When preparing a future build, list only the two newest revisions below.
           ### Recent revisions
-          - **R4:** Shows completed downloads with an open or play button; includes R3 and R2.
-          - **R3:** Adds parallel downloads for supported HLS/DASH segments; includes R2.
-          - **R2:** Restores the original media selection list and adds optional pop-up and basic ad-domain blocking.
+          - **R4:** Shows completed downloads with an open or play button; includes R3.
+          - **R3:** Adds parallel downloads for supported HLS/DASH segments.
 
           ### Choose your APK
           - **ARM64:** for most modern Android phones, including Xiaomi 14.
