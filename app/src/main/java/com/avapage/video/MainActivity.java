@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
     private volatile boolean uiBusy = true;
     private volatile boolean downloading = false;
     private volatile boolean cancelRequested = false;
-    private String browserUrl, browserReferer, browserUserAgent, browserCookies;
+    private String browserUrl, browserReferer, browserUserAgent, browserCookies, browserPageUrl, browserPageCookies;
     private final String processId = "avapage-download";
 
     @Override public void onCreate(Bundle state) {
@@ -72,6 +72,9 @@ public class MainActivity extends Activity {
         File[] jobs=getCacheDir().listFiles(f -> f.isDirectory() && f.getName().startsWith("job-")
                 && System.currentTimeMillis()-f.lastModified()>24L*60*60*1000);
         if(jobs!=null) for(File job:jobs) { File[] parts=job.listFiles(); if(parts!=null) for(File part:parts) if(part.isFile()) part.delete(); job.delete(); }
+        File[] info=getCacheDir().listFiles(f -> f.isFile() && f.getName().startsWith("klip-info-") && f.getName().endsWith(".cookies")
+                && System.currentTimeMillis()-f.lastModified()>24L*60*60*1000);
+        if(info!=null) for(File file:info) file.delete();
     }
     private final DownloadService.Listener downloadListener=(active, message, value, files) -> {
         downloading=active; cancelRequested=false; status.setText(message); progress.setProgress(value);
@@ -94,6 +97,7 @@ public class MainActivity extends Activity {
         if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
             browserUrl=data.getStringExtra("media_url"); browserReferer=data.getStringExtra("media_referer");
             browserUserAgent=data.getStringExtra("media_user_agent"); browserCookies=data.getStringExtra("media_cookies");
+            browserPageUrl=data.getStringExtra("page_url"); browserPageCookies=data.getStringExtra("page_cookies");
             if (browserUrl != null) link.setText(browserUrl);
         }
     }
@@ -154,14 +158,22 @@ public class MainActivity extends Activity {
     private void inspectVideo() {
         String url=validUrl(); if(url==null) return;
         setBusy(true); show("Membaca informasi video...");
-        worker.execute(() -> { try {
+        final String ref=url.equals(browserUrl)?browserReferer:null, agent=url.equals(browserUrl)?browserUserAgent:null;
+        final String cookies=url.equals(browserUrl)?browserCookies:null, page=url.equals(browserUrl)?browserPageUrl:null, pageCookies=url.equals(browserUrl)?browserPageCookies:null;
+        worker.execute(() -> { File cookieFile=null; try {
             YoutubeDLRequest request=new YoutubeDLRequest(url); request.addOption("--no-playlist");
+            if(ref!=null && !ref.isEmpty()) request.addOption("--referer",ref);
+            if(agent!=null && !agent.isEmpty()) request.addOption("--user-agent",agent);
+            if((cookies!=null && !cookies.isEmpty()) || (pageCookies!=null && !pageCookies.isEmpty())) {
+                cookieFile=File.createTempFile("klip-info-", ".cookies", getCacheDir());
+                DownloadService.writeCookies(cookieFile,url,cookies,page,pageCookies); request.addOption("--cookies",cookieFile.getAbsolutePath());
+            }
             VideoInfo info=YoutubeDL.getInstance().getInfo(request);
             String name=info.getTitle()==null ? "Video" : info.getTitle();
             int seconds=info.getDuration(); String duration=seconds>0 ? String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60) : "Durasi tidak tersedia";
             String uploader=info.getUploader()==null ? "" : "\n"+info.getUploader();
             runOnUiThread(() -> preview.setText(name+uploader+"\n"+duration)); show("Info video siap. Pilih format dan mulai download.");
-        } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nAnda masih bisa mencoba download langsung."); } finally { runOnUiThread(() -> setBusy(false)); } });
+        } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nAnda masih bisa mencoba download langsung."); } finally { if(cookieFile!=null) cookieFile.delete(); runOnUiThread(() -> setBusy(false)); } });
     }
     private void displayResults(java.util.List<DownloadService.SavedFile> files) {
         runOnUiThread(() -> {
@@ -188,7 +200,7 @@ public class MainActivity extends Activity {
         String url=validUrl(); if(url==null || DownloadService.isRunning()) return;
         Intent intent=new Intent(this,DownloadService.class);
         intent.putExtra("url",url); intent.putExtra("format",format.getSelectedItemPosition());
-        if(url.equals(browserUrl)) { intent.putExtra("ref",browserReferer); intent.putExtra("agent",browserUserAgent); intent.putExtra("cookies",browserCookies); }
+        if(url.equals(browserUrl)) { intent.putExtra("ref",browserReferer); intent.putExtra("agent",browserUserAgent); intent.putExtra("cookies",browserCookies); intent.putExtra("page_url",browserPageUrl); intent.putExtra("page_cookies",browserPageCookies); }
         downloading=true; cancelRequested=false; resultList.removeAllViews(); resultList.setVisibility(View.GONE);
         setBusy(true); progress.setProgress(0); show("Menyiapkan unduhan...");
         try { startForegroundService(intent); }

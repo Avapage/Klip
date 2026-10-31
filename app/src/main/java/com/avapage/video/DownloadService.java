@@ -66,6 +66,7 @@ public class DownloadService extends Service {
     private String message(Exception e) { return e.getMessage()==null?e.getClass().getSimpleName():e.getMessage(); }
     private void runDownload(Intent intent,int startId) {
         String url=intent.getStringExtra("url"), ref=intent.getStringExtra("ref"), agent=intent.getStringExtra("agent"), cookies=intent.getStringExtra("cookies");
+        String page=intent.getStringExtra("page_url"), pageCookies=intent.getStringExtra("page_cookies");
         int selected=intent.getIntExtra("format",0);
         File dir=new File(getCacheDir(),"job-"+System.currentTimeMillis());
         ArrayList<SavedFile> saved=new ArrayList<>();
@@ -76,12 +77,9 @@ public class DownloadService extends Service {
             request.addOption("--concurrent-fragments","8"); request.addOption("--abort-on-unavailable-fragments");
             if(ref!=null && !ref.isEmpty()) request.addOption("--referer",ref);
             if(agent!=null && !agent.isEmpty()) request.addOption("--user-agent",agent);
-            if(cookies!=null && !cookies.isEmpty()) {
-                String host=Uri.parse(url).getHost(); File cookieFile=new File(dir,".cookies.txt");
-                try(PrintWriter pw=new PrintWriter(new OutputStreamWriter(new FileOutputStream(cookieFile),java.nio.charset.StandardCharsets.UTF_8))) {
-                    pw.println("# Netscape HTTP Cookie File");
-                    for(String cookie:cookies.split(";")) { int split=cookie.indexOf('='); if(split<=0) continue; String name=cookie.substring(0,split).trim(), value=cookie.substring(split+1).trim(); if(name.contains("\t")||name.contains("\n")||value.contains("\t")||value.contains("\n")) continue; pw.println(host+"\tFALSE\t/\t"+(url.startsWith("https:")?"TRUE":"FALSE")+"\t0\t"+name+"\t"+value); }
-                }
+            if((cookies!=null && !cookies.isEmpty()) || (pageCookies!=null && !pageCookies.isEmpty())) {
+                File cookieFile=new File(dir,".cookies.txt");
+                writeCookies(cookieFile,url,cookies,page,pageCookies);
                 request.addOption("--cookies",cookieFile.getAbsolutePath());
             }
             request.addOption("-o",new File(dir,"%(title).120B [%(id)s].%(ext)s").getAbsolutePath());
@@ -102,6 +100,25 @@ public class DownloadService extends Service {
         } finally {
             File[] files=dir.listFiles(); if(files!=null) for(File f:files) f.delete(); dir.delete();
             running=false; update(status,percent); stopForeground(STOP_FOREGROUND_REMOVE); stopSelf(startId);
+        }
+    }
+    static void writeCookies(File file, String mediaUrl, String mediaCookies, String pageUrl, String pageCookies) throws IOException {
+        try(PrintWriter pw=new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),java.nio.charset.StandardCharsets.UTF_8))) {
+            pw.println("# Netscape HTTP Cookie File");
+            appendCookies(pw,mediaUrl,mediaCookies);
+            if(pageUrl!=null && !Objects.equals(Uri.parse(mediaUrl).getHost(),Uri.parse(pageUrl).getHost())) appendCookies(pw,pageUrl,pageCookies);
+            if(pw.checkError()) throw new IOException("Tidak bisa menulis cookies sementara");
+        }
+    }
+    private static void appendCookies(PrintWriter pw, String url, String cookies) {
+        if(url==null || cookies==null) return;
+        Uri parsed=Uri.parse(url); String host=parsed.getHost(), scheme=parsed.getScheme();
+        if(host==null || !("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))) return;
+        for(String cookie:cookies.split(";")) {
+            int split=cookie.indexOf('='); if(split<=0) continue;
+            String name=cookie.substring(0,split).trim(), value=cookie.substring(split+1).trim();
+            if(name.contains("\t")||name.contains("\n")||name.contains("\r")||value.contains("\t")||value.contains("\n")||value.contains("\r")) continue;
+            pw.println(host+"\tFALSE\t/\t"+("https".equalsIgnoreCase(scheme)?"TRUE":"FALSE")+"\t0\t"+name+"\t"+value);
         }
     }
     private SavedFile save(File file) throws IOException {

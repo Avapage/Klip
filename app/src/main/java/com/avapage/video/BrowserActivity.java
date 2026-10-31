@@ -131,7 +131,8 @@ public class BrowserActivity extends Activity {
             if(ref==null || ref.isEmpty()) ref=web.getUrl();
             Intent i=new Intent(); i.putExtra("media_url",selected);
             i.putExtra("media_referer",ref); i.putExtra("media_user_agent",web.getSettings().getUserAgentString());
-            i.putExtra("media_cookies",CookieManager.getInstance().getCookie(selected)); setResult(RESULT_OK,i); finish();
+            i.putExtra("media_cookies",CookieManager.getInstance().getCookie(selected));
+            String pageUrl=web.getUrl(); i.putExtra("page_url",pageUrl); if(pageUrl!=null) i.putExtra("page_cookies",CookieManager.getInstance().getCookie(pageUrl)); setResult(RESULT_OK,i); finish();
         }).setNegativeButton("Tutup",null).show();
     }
     @Override public void onBackPressed() { if(web.canGoBack()) web.goBack(); else super.onBackPressed(); }
