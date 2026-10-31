@@ -4,18 +4,19 @@ Klip is an Android video and audio downloader that uses [yt-dlp](https://github.
 
 **Android 10 or newer** · No Klip download server · Free to use · Preview build
 
-[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
+[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
 
 ## Download Klip for Android
 
-The two most recent **0.2.5 preview revisions** are listed below. Choose R4 for the latest features.
+The three latest app versions are listed below. Choose 0.2.6 for the latest changes.
 
-| Revision | What changed | Download |
+| Version | Description | Download |
 | --- | --- | --- |
-| **R4** | Shows the completed file in Klip with a button to open or play it. Includes the changes in R3. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-ARM64.apk) |
-| **R3** | Adds parallel downloads for supported HLS/DASH segments. | [ARM64 APK](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R3-ARM64.apk) |
+| **0.2.6** | Clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
+| **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
+| **0.2.4** | Earlier version with media detection and download format options. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.4) |
 
-ARM64 is suitable for most modern Android phones. **ARMv7**, **x86_64**, and **universal** APKs for these revisions are available on the [release page](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5).
+Choose ARM64 for most modern Android phones. ARMv7, x86_64, and a universal APK are also available on the release pages.
 
 ## Features
 
