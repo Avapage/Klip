@@ -137,8 +137,7 @@ public class MainActivity extends Activity {
             Uri u=Uri.parse(mediaChoices.get(i)); String p=u.getLastPathSegment();
             labels[i]=(p==null?"Media":p)+"  ·  "+u.getHost()+(mediaChoices.get(i).equals(browserUrl)?" (terpilih)":"");
         }
-        new AlertDialog.Builder(this).setTitle("Coba sumber lain")
-            .setMessage("Sumber lain belum tentu berasal dari video yang sama.")
+        new AlertDialog.Builder(this).setTitle("Pilih sumber lain")
             .setItems(labels,(d,n)->{
                 browserUrl=mediaChoices.get(n); browserReferer=mediaRefs.get(n); browserCookies=mediaCookies.get(n);
                 link.setText(browserUrl); alternatives.setVisibility(View.GONE); download();

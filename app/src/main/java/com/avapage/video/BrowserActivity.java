@@ -100,7 +100,6 @@ public class BrowserActivity extends Activity {
             labels[i]=prefix+(p==null?"Media":p)+"  ·  "+u.getHost();
         }
         new AlertDialog.Builder(this).setTitle("Pilih sumber video")
-            .setMessage("Coba master terlebih dahulu. Stream lain belum tentu berasal dari video yang sama.")
             .setItems(labels,(d,n) -> sendSelected(choices,n))
             .setNegativeButton("Tutup",null).show();
     }

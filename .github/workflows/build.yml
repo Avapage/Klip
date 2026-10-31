@@ -55,7 +55,7 @@ jobs:
           - **Universal:** includes all three architectures if you are unsure.
 
           ### Features
-          Video quality and audio options, video information lookup, HTML5 and JW Player media detection, recommended HLS master playlists, manual alternative source selection, cancellation, and automatic yt-dlp update checks. Downloads run on your device without a Klip download server.
+          Video quality and audio options, video information lookup, HTML5 and JW Player media detection, a fixed source selection dialog, recommended HLS master playlists, manual alternative source selection, cancellation, and automatic yt-dlp update checks. Downloads run on your device without a Klip download server.
 
           ### Installation
           Download the matching APK and open it on your Android device. Allow installation from the selected source if Android asks. This is a **debug preview** that has not been tested on every device. If Android rejects an update because its signing key differs, uninstall the old version before installing the new one. Existing downloads in your Downloads folder are not removed by the app.
@@ -64,6 +64,9 @@ jobs:
           NOTES
           if gh release view klip-v0.2.5 >/dev/null 2>&1; then
             gh release upload klip-v0.2.5 /tmp/klip-apks/*.apk --clobber
+            gh release edit klip-v0.2.5 --notes-file /tmp/klip-notes.md
+            git tag -f klip-v0.2.5 "$GITHUB_SHA"
+            git push --force origin refs/tags/klip-v0.2.5
           else
             gh release create klip-v0.2.5 /tmp/klip-apks/*.apk --target "$GITHUB_SHA" --prerelease --title "Klip 0.2.5 for Android" --notes-file /tmp/klip-notes.md
           fi
