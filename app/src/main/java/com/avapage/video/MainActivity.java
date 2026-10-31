@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
         int white = Color.rgb(240,243,255), muted = Color.rgb(165,177,199);
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true); scroll.setBackgroundColor(Color.rgb(13,17,31));
         LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(22),dp(28),dp(22),dp(36)); scroll.addView(root); setContentView(scroll);
-        TextView badge = text("KLIP  /  MEDIA TOOLKIT", 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
+        TextView badge = text("KLIP  /  0.2.5 R2", 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
         TextView title = text("Simpan yang\npenting.", 36, white); title.setTypeface(Typeface.DEFAULT,Typeface.BOLD); title.setPadding(0,dp(16),0,dp(12)); root.addView(title);
         TextView intro = text("Klip mengambil video dan audio langsung ke perangkatmu.", 16, muted); intro.setPadding(0,0,0,dp(28)); root.addView(intro);
         TextView label = text("TAUTAN VIDEO", 12, muted); root.addView(label);

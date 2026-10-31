@@ -15,7 +15,7 @@ When you choose a detected media link, the app passes the observed referrer, use
 
 ## Download and install
 
-Open the repository's Releases page and choose an APK. **ARM64** is suitable for most modern Android phones; **ARMv7** is for compatible 32-bit devices; **x86_64** is for x86-64 devices or emulators. Choose **Universal** if unsure.
+Open the repository's Releases page and choose an APK marked R2; files without R2 are older builds. **ARM64** is suitable for most modern Android phones; **ARMv7** is for compatible 32-bit devices; **x86_64** is for x86-64 devices or emulators. Choose **Universal** if unsure.
 
 Download the APK directly and open it on your phone. Allow installation from that source if Android asks. This is a debug preview. If Android rejects an update because the signing key differs, uninstall the old version first. Existing files in Downloads are not deleted by the app.
 
