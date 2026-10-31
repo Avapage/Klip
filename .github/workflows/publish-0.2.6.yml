@@ -47,6 +47,8 @@ jobs:
           Klip saves supported video and audio directly on your Android device. Android 10 or newer is required.
 
           ### What's new
+          - Downloads can continue while the app is in the background, with a foreground notification.
+          - Startup no longer waits for the automatic engine update check; the check is deferred until the app is idle.
           - Clearer labels for detected media, including the stream type, host and path. You choose the source.
           - System-bar spacing for the main screen and browser on newer Android versions.
           - Safer handoff of detected media and browser session context.
@@ -59,6 +61,6 @@ jobs:
 
           Download the matching APK below. The SHA256SUMS file can be used to verify the downloads. These are debug builds and have not been tested on every device. If Android rejects an update because the signing key differs, uninstall the old app first. App settings and browser sessions will be removed; files already in Downloads remain.
 
-          Keep Klip open during downloads. Some websites, authenticated streams and DRM-protected media may not work. Download only content you have permission to save.
+          Android may stop background transfers because of system limits, force-stop, or power management. Some websites, authenticated streams and DRM-protected media may not work. Download only content you have permission to save.
           NOTES
           gh release create klip-v0.2.6 "$RUNNER_TEMP"/klip-release/*.apk "$RUNNER_TEMP/klip-release/SHA256SUMS.txt" --target "$GITHUB_SHA" --title 'Klip 0.2.6 for Android' --notes-file "$RUNNER_TEMP/klip-release-notes.md" --latest
