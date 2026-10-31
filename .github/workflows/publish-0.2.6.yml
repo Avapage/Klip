@@ -1,0 +1,68 @@
+name: Publish Klip 0.2.6
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: klip-release-0-2-6
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build and publish new release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view klip-v0.2.6 >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to change published files.' >&2; exit 1
+          fi
+          if git ls-remote --exit-code --tags origin refs/tags/klip-v0.2.6 >/dev/null 2>&1; then
+            echo 'Tag already exists; refusing to move it.' >&2; exit 1
+          fi
+          gradle --no-daemon :app:assembleDebug
+          mkdir -p "$RUNNER_TEMP/klip-release"
+          cp app/build/outputs/apk/debug/app-arm64-v8a-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-ARM64.apk"
+          cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-ARMv7.apk"
+          cp app/build/outputs/apk/debug/app-x86_64-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-x86_64.apk"
+          cp app/build/outputs/apk/debug/app-universal-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-Universal.apk"
+          (cd "$RUNNER_TEMP/klip-release" && sha256sum *.apk > SHA256SUMS.txt)
+          cat > "$RUNNER_TEMP/klip-release-notes.md" <<'NOTES'
+          ## Klip 0.2.6 for Android
+
+          Klip saves supported video and audio directly on your Android device. Android 10 or newer is required.
+
+          ### What's new
+          - Clearer labels for detected media, including the stream type, host and path. You choose the source.
+          - System-bar spacing for the main screen and browser on newer Android versions.
+          - Safer handoff of detected media and browser session context.
+          - An available-space check before saving completed files, plus an app version label based on the installed package.
+          - Improvements to the build process that prevent ordinary updates from replacing existing release files.
+
+          ### Choose your APK
+          - **ARM64:** most modern Android phones.
+          - **ARMv7:** compatible 32-bit devices.
+          - **x86_64:** compatible devices and emulators.
+          - **Universal:** all three architectures in one larger APK.
+
+          Download the matching APK below. The SHA256SUMS file can be used to verify the downloads. These are debug builds and have not been tested on every device. If Android rejects an update because the signing key differs, uninstall the old app first. App settings and browser sessions will be removed; files already in Downloads remain.
+
+          Keep Klip open during downloads. Some websites, authenticated streams and DRM-protected media may not work. Download only content you have permission to save.
+          NOTES
+          gh release create klip-v0.2.6 "$RUNNER_TEMP"/klip-release/*.apk "$RUNNER_TEMP/klip-release/SHA256SUMS.txt" --target "$GITHUB_SHA" --title 'Klip 0.2.6 for Android' --notes-file "$RUNNER_TEMP/klip-release-notes.md" --latest
