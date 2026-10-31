@@ -1,31 +1,72 @@
-# Klip
+# Klip: Video and Audio Downloader for Android
 
-Klip is a preview Android app for downloading video and audio directly on your device. It uses yt-dlp and FFmpeg via youtubedl-android. Android 10 (API 29) or newer is required.
+Klip is an Android video and audio downloader that uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) and FFmpeg to save supported media directly to your device. Paste a link or use the built-in browser to find supported video and stream URLs.
+
+**Android 10 or newer** · No Klip download server · Free to use · Preview build
+
+[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
+
+## Download Klip for Android
+
+Choose a **0.2.5 R4** APK for your device. Older assets without R4 are previous builds.
+
+| APK | Best for |
+| --- | --- |
+| [ARM64](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-ARM64.apk) | Most modern Android phones |
+| [ARMv7](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-ARMv7.apk) | Compatible 32-bit Android devices |
+| [x86_64](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-x86_64.apk) | Compatible x86-64 devices and emulators |
+| [Universal](https://github.com/Avapage/Klip/releases/download/klip-v0.2.5/Klip-0.2.5-R4-Universal.apk) | All three architectures when you are unsure |
+
+[View release notes and all files](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5)
 
 ## Features
 
-- Video and audio format options, including quality limits and MP3.
-- Video title and duration lookup when supported.
-- Built-in browser that detects some direct video, audio, HLS and DASH links.
-- Browser protection against pop-up windows and requests to a small, built-in list of advertising domains. It can be switched off in the browser and does not block every ad.
-- Downloads up to eight HLS/DASH fragments concurrently when the downloader and source support it. Speed depends on the network and source; direct files may not become faster.
-- Cancel downloads and update the yt-dlp engine from the app.
-- Completed downloads appear in the app with an open or play button and are saved to Downloads/Klip.
+- Download supported video or extract audio as MP3 or its original format.
+- Choose a maximum video quality of 1080p, 720p, or 480p, where available.
+- Browse websites within the app and detect some direct video, audio, HLS `.m3u8`, and DASH `.mpd` links.
+- Reduce some pop-ups and requests to known advertising domains using the built-in browser protection.
+- Download up to eight HLS/DASH fragments concurrently when the source and downloader support it.
+- Open a completed download from the app. Files are saved to **Downloads/Klip**.
+- Cancel downloads and check for yt-dlp updates automatically or manually.
 
-When you choose a detected media link, the app passes the observed referrer, user agent and cookies matching that media host to the downloader. Cookies are kept temporarily in private app storage and removed when the download completes or is canceled.
+Klip runs the downloader on the device. Actual download speed depends on the source and your connection. Not every site, media format, or video is supported.
 
-## Download and install
+## Installation
 
-Open the repository's Releases page and choose an APK marked R4; files marked R3, R2 or without a revision marker are older builds. **ARM64** is suitable for most modern Android phones; **ARMv7** is for compatible 32-bit devices; **x86_64** is for x86-64 devices or emulators. Choose **Universal** if unsure.
+1. Download the APK for your device from the links above.
+2. Open the APK on Android and allow installation from that source if prompted.
+3. Open Klip and paste a supported link, or share a link to the app.
+4. Choose a format and start the download. Keep the app open while downloading.
+5. Open the completed file from Klip or find it in **Downloads/Klip**.
 
-Download the APK directly and open it on your phone. Allow installation from that source if Android asks. This is a debug preview. If Android rejects an update because the signing key differs, uninstall the old version first. Existing files in Downloads are not deleted by the app.
+This is a **debug preview**. If Android rejects an update because its signing key differs, uninstall the previous build and install the new APK. Files already saved in Downloads remain there; app settings and browser sessions are removed when the app is uninstalled.
 
-## Limitations
+## Downloading from websites
 
-The app has not been tested on every Android version or website. Some sites, videos requiring authentication, and DRM-protected videos may not work. Detection depends on how a site delivers its media. Keep Klip open during a download. Engine updates and site changes may affect compatibility. Download only content you are permitted to download.
+If a page link is not recognized, open it in Klip's browser, play the video, and check **Media terdeteksi** for available media links. Select a detected source, then choose a format and download it. Detection depends on how each website delivers its media.
 
-## Build
+The optional browser protection uses a small built-in list of advertising domains and blocks pop-up windows. It does not block every ad and can be turned off if a site does not work.
 
-Open this folder in Android Studio with JDK 17 and Android SDK 35, or run `gradle :app:assembleDebug` with Gradle 8.10.2. APKs appear under `app/build/outputs/apk/debug/`.
+## Troubleshooting
 
-Uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg. Each component is subject to its own license.
+- **Unsupported URL:** Update the yt-dlp engine in Klip, or try detecting a media link in the built-in browser. A site may still be unsupported.
+- **Playback fails:** Open the saved file with a compatible video or audio player.
+- **Download fails or is slow:** A website may limit connections, require authentication, or change how it serves media.
+- **No media detected:** Play the video in the browser first. Some protected or dynamically delivered media cannot be detected.
+- **Update will not install:** Debug builds may have different signing keys. Uninstall the previous build before installing the new one.
+
+DRM-protected content and some login-dependent videos may not work. Download only content you are permitted to access and download.
+
+## Privacy
+
+Downloads are processed on your device without a Klip download server. When you select a media link in the browser, Klip can pass the observed referrer, user agent, and cookies applicable to the media host to yt-dlp. A temporary cookie file is stored in the app's private cache and is removed when the download process completes or is canceled. The app contacts source websites and update providers over the internet.
+
+## Build from source
+
+Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, or use Gradle 8.10.2:
+
+```bash
+gradle :app:assembleDebug
+```
+
+APKs are created in `app/build/outputs/apk/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license.
