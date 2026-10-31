@@ -1,4 +1,4 @@
-# Klip: Video and Audio Downloader for Android
+# Klip - Video Downloader
 
 Klip is an Android video and audio downloader that uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) and FFmpeg to save supported media directly to your device. Paste a link or use the built-in browser to find supported video and stream URLs.
 
