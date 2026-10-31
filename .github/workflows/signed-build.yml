@@ -1,0 +1,65 @@
+name: Build signed Klip APKs
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build signed APKs
+        shell: bash
+        env:
+          KLIP_KEYSTORE_BASE64: ${{ secrets.KLIP_KEYSTORE_BASE64 }}
+          KLIP_KEYSTORE_PASSWORD: ${{ secrets.KLIP_KEYSTORE_PASSWORD }}
+          KLIP_KEY_ALIAS: ${{ secrets.KLIP_KEY_ALIAS }}
+          KLIP_KEY_PASSWORD: ${{ secrets.KLIP_KEY_PASSWORD }}
+          KLIP_KEYSTORE_PATH: ${{ runner.temp }}/klip-release.keystore
+        run: |
+          set -euo pipefail
+          for name in KLIP_KEYSTORE_BASE64 KLIP_KEYSTORE_PASSWORD KLIP_KEY_ALIAS KLIP_KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then echo "Missing signing secret: $name" >&2; exit 1; fi
+          done
+          umask 077
+          trap 'rm -f "$KLIP_KEYSTORE_PATH"' EXIT
+          printf '%s' "$KLIP_KEYSTORE_BASE64" | base64 --decode > "$KLIP_KEYSTORE_PATH"
+          gradle --no-daemon :app:assembleRelease
+      - name: Verify signatures and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/release/*.apk)
+          (( ${#apks[@]} == 4 )) || { echo 'Expected four APKs' >&2; exit 1; }
+          tool="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
+          [[ -n "$tool" ]] || { echo 'apksigner not found' >&2; exit 1; }
+          expected=""
+          for apk in "${apks[@]}"; do
+            output="$("$tool" verify --verbose --print-certs "$apk")"
+            printf '%s\n' "$output"
+            fingerprint="$(printf '%s\n' "$output" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+            [[ -n "$fingerprint" ]] || { echo 'Missing certificate fingerprint' >&2; exit 1; }
+            [[ -z "$expected" || "$fingerprint" == "$expected" ]] || { echo 'APK signing certificates differ' >&2; exit 1; }
+            expected="$fingerprint"
+          done
+          (cd app/build/outputs/apk/release && sha256sum ./*.apk > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Klip-signed-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
