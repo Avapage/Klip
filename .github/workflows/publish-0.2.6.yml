@@ -39,8 +39,6 @@ jobs:
           gradle --no-daemon :app:assembleDebug
           mkdir -p "$RUNNER_TEMP/klip-release"
           cp app/build/outputs/apk/debug/app-arm64-v8a-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-ARM64.apk"
-          cp app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-ARMv7.apk"
-          cp app/build/outputs/apk/debug/app-x86_64-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-x86_64.apk"
           cp app/build/outputs/apk/debug/app-universal-debug.apk "$RUNNER_TEMP/klip-release/Klip-0.2.6-Universal.apk"
           (cd "$RUNNER_TEMP/klip-release" && sha256sum *.apk > SHA256SUMS.txt)
           cat > "$RUNNER_TEMP/klip-release-notes.md" <<'NOTES'
@@ -57,9 +55,7 @@ jobs:
 
           ### Choose your APK
           - **ARM64:** most modern Android phones.
-          - **ARMv7:** compatible 32-bit devices.
-          - **x86_64:** compatible devices and emulators.
-          - **Universal:** all three architectures in one larger APK.
+          - **Universal:** includes supported architectures in one larger APK.
 
           Download the matching APK below. The SHA256SUMS file can be used to verify the downloads. These are debug builds and have not been tested on every device. If Android rejects an update because the signing key differs, uninstall the old app first. App settings and browser sessions will be removed; files already in Downloads remain.
 

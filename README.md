@@ -16,7 +16,7 @@ The three latest app versions are listed below. Choose 0.2.6 for the latest chan
 | **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
 | **0.2.4** | Earlier version with media detection and download format options. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.4) |
 
-Choose ARM64 for most modern Android phones. ARMv7, x86_64, and a universal APK are also available on the release pages.
+For 0.2.6, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
 
 ## Features
 
