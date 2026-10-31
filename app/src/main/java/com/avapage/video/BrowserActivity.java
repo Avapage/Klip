@@ -81,43 +81,18 @@ public class BrowserActivity extends Activity {
             showMedia();
         });
     }
-    private static int mediaPriority(String url) {
-        String path=Uri.parse(url).getPath(); String name=path==null?"":path.toLowerCase(Locale.ROOT);
-        if(name.endsWith("/master.m3u8")) return 0;
-        if(name.endsWith(".m3u8")) return 1;
-        return 2;
-    }
     private void showMedia() {
         ArrayList<String> results; synchronized(links) { results=new ArrayList<>(links); }
         if(results.isEmpty()) { Toast.makeText(this,"Belum ada media terdeteksi. Putar videonya dahulu.",Toast.LENGTH_LONG).show(); return; }
-        java.util.Collections.sort(results,(a,b) -> Integer.compare(mediaPriority(a),mediaPriority(b)));
-        if(results.size()>20) results=new ArrayList<>(results.subList(0,20));
-        final ArrayList<String> choices=results;
-        CharSequence[] labels=new CharSequence[choices.size()];
-        for(int i=0;i<choices.size();i++) {
-            Uri u=Uri.parse(choices.get(i)); String p=u.getLastPathSegment();
-            String prefix=mediaPriority(choices.get(i))==0 ? "★ Disarankan · " : mediaPriority(choices.get(i))==1 ? "Stream · " : "";
-            labels[i]=prefix+(p==null?"Media":p)+"  ·  "+u.getHost();
-        }
-        new AlertDialog.Builder(this).setTitle("Pilih sumber video")
-            .setItems(labels,(d,n) -> sendSelected(choices,n))
-            .setNegativeButton("Tutup",null).show();
-    }
-    private void sendSelected(ArrayList<String> choices, int selectedIndex) {
-        String selected=choices.get(selectedIndex); String ref; synchronized(links) { ref=referers.get(selected); }
-        if(ref==null || ref.isEmpty()) ref=web.getUrl();
-        ArrayList<String> refs=new ArrayList<>(), cookies=new ArrayList<>();
-        for(String url:choices) {
-            String itemRef; synchronized(links) { itemRef=referers.get(url); }
-            refs.add(itemRef==null || itemRef.isEmpty() ? web.getUrl() : itemRef);
-            String cookie=CookieManager.getInstance().getCookie(url);
-            cookies.add(cookie==null?"":cookie);
-        }
-        Intent i=new Intent(this,MainActivity.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP); i.putExtra("media_url",selected);
-        i.putExtra("media_referer",ref); i.putExtra("media_user_agent",web.getSettings().getUserAgentString());
-        i.putExtra("media_cookies",cookies.get(selectedIndex));
-        i.putStringArrayListExtra("media_choices",choices); i.putStringArrayListExtra("media_refs",refs); i.putStringArrayListExtra("media_choice_cookies",cookies);
-        startActivity(i); finish();
+        CharSequence[] labels=new CharSequence[results.size()];
+        for(int i=0;i<results.size();i++) { Uri u=Uri.parse(results.get(i)); String p=u.getLastPathSegment(); labels[i]=(p==null?"Media":p)+"  ·  "+u.getHost(); }
+        new AlertDialog.Builder(this).setTitle("Pilih tautan media").setItems(labels,(d,n) -> {
+            String selected=results.get(n); String ref; synchronized(links) { ref=referers.get(selected); }
+            if(ref==null || ref.isEmpty()) ref=web.getUrl();
+            Intent i=new Intent(this,MainActivity.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP); i.putExtra("media_url",selected);
+            i.putExtra("media_referer",ref); i.putExtra("media_user_agent",web.getSettings().getUserAgentString());
+            i.putExtra("media_cookies",CookieManager.getInstance().getCookie(selected)); startActivity(i); finish();
+        }).setNegativeButton("Tutup",null).show();
     }
     @Override public void onBackPressed() { if(web.canGoBack()) web.goBack(); else super.onBackPressed(); }
     @Override protected void onDestroy() { web.destroy(); super.onDestroy(); }

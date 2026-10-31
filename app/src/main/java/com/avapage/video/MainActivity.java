@@ -29,12 +29,11 @@ public class MainActivity extends Activity {
     private TextView status, preview;
     private ProgressBar progress;
     private Spinner format;
-    private Button start, update, inspect, cancel, alternatives;
+    private Button start, update, inspect, cancel;
     private volatile boolean ready = false;
     private volatile boolean downloading = false;
     private volatile boolean cancelRequested = false;
     private String browserUrl, browserReferer, browserUserAgent, browserCookies;
-    private java.util.ArrayList<String> mediaChoices, mediaRefs, mediaCookies;
     private final String processId = "avapage-download";
 
     @Override public void onCreate(Bundle state) {
@@ -64,7 +63,7 @@ public class MainActivity extends Activity {
     }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); acceptIntent(intent); }
     private void acceptIntent(Intent intent) {
-        if (intent != null && intent.hasExtra("media_url")) { browserUrl=intent.getStringExtra("media_url"); browserReferer=intent.getStringExtra("media_referer"); browserUserAgent=intent.getStringExtra("media_user_agent"); browserCookies=intent.getStringExtra("media_cookies"); mediaChoices=intent.getStringArrayListExtra("media_choices"); mediaRefs=intent.getStringArrayListExtra("media_refs"); mediaCookies=intent.getStringArrayListExtra("media_choice_cookies"); link.setText(browserUrl); alternatives.setVisibility(View.GONE); return; }
+        if (intent != null && intent.hasExtra("media_url")) { browserUrl=intent.getStringExtra("media_url"); browserReferer=intent.getStringExtra("media_referer"); browserUserAgent=intent.getStringExtra("media_user_agent"); browserCookies=intent.getStringExtra("media_cookies"); link.setText(browserUrl); return; }
         if (intent != null && Intent.ACTION_SEND.equals(intent.getAction())) {
             String text = intent.getStringExtra(Intent.EXTRA_TEXT);
             if (text != null) {
@@ -94,7 +93,6 @@ public class MainActivity extends Activity {
         format = new Spinner(this); String[] formats={"Video · kualitas terbaik", "Video · maksimal 1080p", "Video · maksimal 720p", "Video · maksimal 480p", "Audio · MP3", "Audio · format asli"}; ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,formats); format.setAdapter(adapter); root.addView(format);
         start = new Button(this); start.setText("Mulai download"); root.addView(start); start.setOnClickListener(v -> download());
         cancel = new Button(this); cancel.setText("Batalkan unduhan"); cancel.setVisibility(View.GONE); root.addView(cancel); cancel.setOnClickListener(v -> { cancelRequested=true; cancel.setEnabled(false); show("Membatalkan unduhan..."); new Thread(() -> YoutubeDL.getInstance().destroyProcessById(processId)).start(); });
-        alternatives = new Button(this); alternatives.setText("Coba sumber lain"); alternatives.setVisibility(View.GONE); root.addView(alternatives); alternatives.setOnClickListener(v -> chooseAlternative());
         progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal); progress.setMax(100); root.addView(progress);
         status = text("Menyiapkan aplikasi...", 14, muted); status.setTextIsSelectable(true); status.setPadding(0,16,0,0); root.addView(status);
         update = new Button(this); update.setText("Pembaruan mesin"); root.addView(update); update.setOnClickListener(v -> chooseUpdate());
@@ -130,26 +128,12 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> preview.setText(name+uploader+"\n"+duration)); show("Info video siap. Pilih format dan mulai download.");
         } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nLo tetap bisa mencoba download langsung."); } finally { runOnUiThread(() -> setBusy(false)); } });
     }
-    private void chooseAlternative() {
-        if(mediaChoices==null || mediaRefs==null || mediaCookies==null || mediaChoices.size()!=mediaRefs.size() || mediaChoices.size()!=mediaCookies.size()) return;
-        CharSequence[] labels=new CharSequence[mediaChoices.size()];
-        for(int i=0;i<mediaChoices.size();i++) {
-            Uri u=Uri.parse(mediaChoices.get(i)); String p=u.getLastPathSegment();
-            labels[i]=(p==null?"Media":p)+"  ·  "+u.getHost()+(mediaChoices.get(i).equals(browserUrl)?" (terpilih)":"");
-        }
-        new AlertDialog.Builder(this).setTitle("Pilih sumber lain")
-            .setItems(labels,(d,n)->{
-                browserUrl=mediaChoices.get(n); browserReferer=mediaRefs.get(n); browserCookies=mediaCookies.get(n);
-                link.setText(browserUrl); alternatives.setVisibility(View.GONE); download();
-            }).setNegativeButton("Batal",null).show();
-    }
     private void download() {
         String url=validUrl(); if(url==null) return;
         final int selected=format.getSelectedItemPosition();
         final String contextReferer=url.equals(browserUrl)?browserReferer:null;
         final String contextAgent=url.equals(browserUrl)?browserUserAgent:null;
         final String contextCookies=url.equals(browserUrl)?browserCookies:null;
-        alternatives.setVisibility(View.GONE);
         downloading=true; cancelRequested=false;
         setBusy(true); progress.setProgress(0); show("Menyiapkan unduhan...");
         worker.execute(() -> {
@@ -181,7 +165,7 @@ public class MainActivity extends Activity {
                 for(File file:files) saveToDownloads(file);
                 show("Selesai! File disimpan di Downloads/Klip.");
                 runOnUiThread(() -> progress.setProgress(100));
-            } catch(Exception e) { show(cancelRequested ? "Unduhan dibatalkan." : message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Unduhan gagal: " + message(e) + "\nCoba update mesin atau gunakan tautan lain."); if(!cancelRequested && mediaChoices!=null && mediaChoices.size()>1 && url.equals(browserUrl)) runOnUiThread(() -> alternatives.setVisibility(View.VISIBLE)); }
+            } catch(Exception e) { show(cancelRequested ? "Unduhan dibatalkan." : message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Unduhan gagal: " + message(e) + "\nCoba update mesin atau gunakan tautan lain."); }
             finally { File[] files=dir.listFiles(); if(files!=null) for(File f:files) f.delete(); dir.delete(); downloading=false; runOnUiThread(() -> setBusy(false)); }
         });
     }
