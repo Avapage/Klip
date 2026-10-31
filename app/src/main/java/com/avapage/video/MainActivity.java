@@ -65,13 +65,20 @@ public class MainActivity extends Activity {
     }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); acceptIntent(intent); }
     private void acceptIntent(Intent intent) {
-        if (intent != null && intent.hasExtra("media_url")) { browserUrl=intent.getStringExtra("media_url"); browserReferer=intent.getStringExtra("media_referer"); browserUserAgent=intent.getStringExtra("media_user_agent"); browserCookies=intent.getStringExtra("media_cookies"); link.setText(browserUrl); return; }
         if (intent != null && Intent.ACTION_SEND.equals(intent.getAction())) {
             String text = intent.getStringExtra(Intent.EXTRA_TEXT);
             if (text != null) {
                 java.util.regex.Matcher m = java.util.regex.Pattern.compile("https?://\\S+").matcher(text);
                 link.setText(m.find() ? m.group() : text);
             }
+        }
+    }
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            browserUrl=data.getStringExtra("media_url"); browserReferer=data.getStringExtra("media_referer");
+            browserUserAgent=data.getStringExtra("media_user_agent"); browserCookies=data.getStringExtra("media_cookies");
+            if (browserUrl != null) link.setText(browserUrl);
         }
     }
     private TextView text(String s, int size, int color) { TextView t = new TextView(this); t.setText(s); t.setTextSize(size); t.setTextColor(color); return t; }
@@ -81,7 +88,15 @@ public class MainActivity extends Activity {
         int white = Color.rgb(240,243,255), muted = Color.rgb(165,177,199);
         ScrollView scroll = new ScrollView(this); screen=scroll; scroll.setFillViewport(true); scroll.setBackgroundColor(Color.rgb(13,17,31));
         LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(22),dp(28),dp(22),dp(36)); scroll.addView(root); setContentView(scroll);
-        TextView badge = text("KLIP  /  0.2.5 R4", 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            v.setPadding(dp(22)+insets.getSystemWindowInsetLeft(), dp(28)+insets.getSystemWindowInsetTop(),
+                    dp(22)+insets.getSystemWindowInsetRight(), dp(36)+insets.getSystemWindowInsetBottom());
+            return insets;
+        });
+        String version;
+        try { version=getPackageManager().getPackageInfo(getPackageName(),0).versionName; }
+        catch(android.content.pm.PackageManager.NameNotFoundException e) { version=""; }
+        TextView badge = text("KLIP  /  "+version, 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
         TextView title = text("Simpan yang\npenting.", 36, white); title.setTypeface(Typeface.DEFAULT,Typeface.BOLD); title.setPadding(0,dp(16),0,dp(12)); root.addView(title);
         TextView intro = text("Klip mengambil video dan audio langsung ke perangkatmu.", 16, muted); intro.setPadding(0,0,0,dp(28)); root.addView(intro);
         TextView label = text("TAUTAN VIDEO", 12, muted); root.addView(label);
@@ -89,7 +104,7 @@ public class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this); row.setGravity(Gravity.END); root.addView(row);
         Button paste = new Button(this); paste.setText("Tempel"); row.addView(paste); paste.setOnClickListener(v -> { android.content.ClipboardManager cb=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE); if(cb.hasPrimaryClip() && cb.getPrimaryClip()!=null) link.setText(cb.getPrimaryClip().getItemAt(0).coerceToText(this)); });
         inspect = new Button(this); inspect.setText("Cek info video"); row.addView(inspect); inspect.setOnClickListener(v -> inspectVideo());
-        Button browser=new Button(this); browser.setText("Buka browser video"); root.addView(browser); browser.setOnClickListener(v -> { Intent i=new Intent(this, BrowserActivity.class); String u=validUrl(); if(u!=null) i.putExtra("url",u); else link.setError(null); startActivity(i); });
+        Button browser=new Button(this); browser.setText("Buka browser video"); root.addView(browser); browser.setOnClickListener(v -> { Intent i=new Intent(this, BrowserActivity.class); String u=validUrl(); if(u!=null) i.putExtra("url",u); else link.setError(null); startActivityForResult(i, 100); });
         preview = text("Info video akan muncul di sini setelah diperiksa.", 14, muted); preview.setPadding(dp(16),dp(14),dp(16),dp(14)); preview.setBackground(rounded(Color.rgb(25,34,49),14)); root.addView(preview);
         TextView fLabel = text("FORMAT", 12, muted); fLabel.setPadding(0,20,0,4); root.addView(fLabel);
         format = new Spinner(this); String[] formats={"Video · kualitas terbaik", "Video · maksimal 1080p", "Video · maksimal 720p", "Video · maksimal 480p", "Audio · MP3", "Audio · format asli"}; ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,formats); format.setAdapter(adapter); root.addView(format);
@@ -130,7 +145,7 @@ public class MainActivity extends Activity {
             int seconds=info.getDuration(); String duration=seconds>0 ? String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60) : "Durasi tidak tersedia";
             String uploader=info.getUploader()==null ? "" : "\n"+info.getUploader();
             runOnUiThread(() -> preview.setText(name+uploader+"\n"+duration)); show("Info video siap. Pilih format dan mulai download.");
-        } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nLo tetap bisa mencoba download langsung."); } finally { runOnUiThread(() -> setBusy(false)); } });
+        } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nAnda masih bisa mencoba download langsung."); } finally { runOnUiThread(() -> setBusy(false)); } });
     }
     private static class SavedFile {
         final Uri uri; final String name; final String mime;
