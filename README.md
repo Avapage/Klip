@@ -7,6 +7,7 @@ Klip is a preview Android app for downloading video and audio directly on your d
 - Video and audio format options, including quality limits and MP3.
 - Video title and duration lookup when supported.
 - Built-in browser that detects some direct video, audio, HLS and DASH links.
+- Browser protection against pop-up windows and requests to a small, built-in list of advertising domains. It can be switched off in the browser and does not block every ad.
 - Cancel downloads and update the yt-dlp engine from the app.
 - Downloads are saved to Downloads/Klip.
 

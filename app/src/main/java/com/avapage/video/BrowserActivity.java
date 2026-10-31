@@ -22,7 +22,9 @@ import android.webkit.CookieManager;
 public class BrowserActivity extends Activity {
     private WebView web;
     private EditText address;
-    private Button media;
+    private Button media, shield;
+    private volatile boolean adBlock = true;
+    private static final String[] AD_HOSTS = {"doubleclick.net","googlesyndication.com","googleadservices.com","adservice.google.com","popads.net","popcash.net","propellerads.com","onclicka.com","adsterra.com","exoclick.com","exosrv.com","trafficjunky.net","juicyads.com"};
     private final LinkedHashSet<String> links = new LinkedHashSet<>();
     private final HashMap<String,String> referers = new HashMap<>();
 
@@ -33,16 +35,32 @@ public class BrowserActivity extends Activity {
         address=new EditText(this); address.setSingleLine(); address.setTextColor(Color.WHITE); address.setHintTextColor(Color.LTGRAY); address.setHint("https://alamat-situs.com");
         bar.addView(address,new LinearLayout.LayoutParams(0,-2,1));
         Button go=new Button(this); go.setText("Buka"); bar.addView(go);
+        adBlock=getSharedPreferences("browser",MODE_PRIVATE).getBoolean("ad_block",true);
+        shield=new Button(this); shield.setText(adBlock?"Blokir iklan: AKTIF":"Blokir iklan: NONAKTIF"); root.addView(shield);
+        shield.setOnClickListener(v -> {
+            adBlock=!adBlock; getSharedPreferences("browser",MODE_PRIVATE).edit().putBoolean("ad_block",adBlock).apply();
+            shield.setText(adBlock?"Blokir iklan: AKTIF":"Blokir iklan: NONAKTIF");
+            web.getSettings().setSupportMultipleWindows(adBlock);
+            web.getSettings().setJavaScriptCanOpenWindowsAutomatically(!adBlock);
+            if(web.getUrl()!=null) web.reload();
+        });
         TextView hint=new TextView(this); hint.setTextColor(Color.LTGRAY); hint.setPadding(16,8,16,8); hint.setText("Putar video, lalu periksa media yang terdeteksi. Tidak semua situs menampilkan tautan langsung."); root.addView(hint);
         web=new WebView(this); root.addView(web,new LinearLayout.LayoutParams(-1,0,1));
         media=new Button(this); media.setText("Media terdeteksi: 0"); root.addView(media); setContentView(root);
         web.getSettings().setJavaScriptEnabled(true); web.getSettings().setDomStorageEnabled(true);
+        web.getSettings().setSupportMultipleWindows(adBlock); web.getSettings().setJavaScriptCanOpenWindowsAutomatically(!adBlock);
         web.getSettings().setAllowFileAccess(false); web.getSettings().setAllowContentAccess(false);
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon) { address.setText(url); synchronized(links) { links.clear(); referers.clear(); } media.setText("Media terdeteksi: 0"); }
-            @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest req) { String s=req.getUrl().getScheme(); return !("https".equalsIgnoreCase(s) || "http".equalsIgnoreCase(s)); }
-            @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest req) { observe(req.getUrl(), req.getRequestHeaders().get("Referer")); return super.shouldInterceptRequest(view,req); }
+            @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest req) {
+                String s=req.getUrl().getScheme();
+                return !("https".equalsIgnoreCase(s) || "http".equalsIgnoreCase(s)) || isBlockedAd(req.getUrl());
+            }
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest req) {
+                if(isBlockedAd(req.getUrl())) return new WebResourceResponse("text/plain","UTF-8",new java.io.ByteArrayInputStream(new byte[0]));
+                observe(req.getUrl(), req.getRequestHeaders().get("Referer")); return super.shouldInterceptRequest(view,req);
+            }
         });
         web.setDownloadListener((url,userAgent,contentDisposition,mime,contentLength) -> {
             Uri u=Uri.parse(url); String m=mime==null?"":mime.toLowerCase(Locale.ROOT);
@@ -51,6 +69,12 @@ public class BrowserActivity extends Activity {
         go.setOnClickListener(v -> open(address.getText().toString().trim()));
         media.setOnClickListener(v -> scanPage());
         String initial=getIntent().getStringExtra("url"); if(initial!=null) open(initial);
+    }
+    private boolean isBlockedAd(Uri uri) {
+        if(!adBlock || uri==null || uri.getHost()==null) return false;
+        String host=uri.getHost().toLowerCase(Locale.ROOT);
+        for(String domain:AD_HOSTS) if(host.equals(domain) || host.endsWith("."+domain)) return true;
+        return false;
     }
     private void open(String value) {
         if(!value.contains("://")) value="https://"+value;
