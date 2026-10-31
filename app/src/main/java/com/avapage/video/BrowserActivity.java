@@ -31,6 +31,11 @@ public class BrowserActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         LinearLayout root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setBackgroundColor(Color.rgb(13,17,31));
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            v.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                    insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+            return insets;
+        });
         LinearLayout bar=new LinearLayout(this); root.addView(bar);
         address=new EditText(this); address.setSingleLine(); address.setTextColor(Color.WHITE); address.setHintTextColor(Color.LTGRAY); address.setHint("https://alamat-situs.com");
         bar.addView(address,new LinearLayout.LayoutParams(0,-2,1));
@@ -124,9 +129,9 @@ public class BrowserActivity extends Activity {
         new AlertDialog.Builder(this).setTitle("Pilih tautan media").setItems(labels,(d,n) -> {
             String selected=results.get(n); String ref; synchronized(links) { ref=referers.get(selected); }
             if(ref==null || ref.isEmpty()) ref=web.getUrl();
-            Intent i=new Intent(this,MainActivity.class); i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP); i.putExtra("media_url",selected);
+            Intent i=new Intent(); i.putExtra("media_url",selected);
             i.putExtra("media_referer",ref); i.putExtra("media_user_agent",web.getSettings().getUserAgentString());
-            i.putExtra("media_cookies",CookieManager.getInstance().getCookie(selected)); startActivity(i); finish();
+            i.putExtra("media_cookies",CookieManager.getInstance().getCookie(selected)); setResult(RESULT_OK,i); finish();
         }).setNegativeButton("Tutup",null).show();
     }
     @Override public void onBackPressed() { if(web.canGoBack()) web.goBack(); else super.onBackPressed(); }
