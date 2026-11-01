@@ -12,7 +12,7 @@ The three latest app versions are listed below. Choose 0.2.7 R1 for the latest c
 
 | Version | Description | Download |
 | --- | --- | --- |
-| **0.2.7 R1** | Adds persistent download history and a GPL-3.0 license, with ARM64 and Universal APKs. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7-r1) |
+| **0.2.7 R1** | Adds download history, a GPL-3.0 license, an English interface, and rotating quotes, with ARM64 and Universal APKs. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7-r1) |
 | **0.2.6** | Background downloads, clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
 | **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
 
@@ -28,6 +28,7 @@ For 0.2.7 R1, choose ARM64 for most modern Android phones, or Universal if you a
 - Run a user-started download in the background while Android permits the foreground service to run.
 - Open a completed download from the app. Files are saved to **Downloads/Klip**.
 - View up to 20 recent Klip files saved in Downloads/Klip after restarting the app. Removed files no longer appear.
+- See a different short saying from a collection of 100 each time the app is opened.
 - Cancel downloads and check for yt-dlp updates automatically or manually.
 
 Klip runs the downloader on the device. Actual download speed depends on the source and your connection. Not every site, media format, or video is supported.
@@ -44,7 +45,7 @@ This is a **debug preview**. If Android rejects an update because its signing ke
 
 ## Downloading from websites
 
-If a page link is not recognized, open it in Klip's browser, play the video, and check **Media terdeteksi** for available media links. Select a detected source, then choose a format and download it. Detection depends on how each website delivers its media.
+If a page link is not recognized, open it in Klip's browser, play the video, and check **Detected media** for available media links. Select a detected source, then choose a format and download it. Detection depends on how each website delivers its media.
 
 The optional browser protection uses a small built-in list of advertising domains and blocks pop-up windows. It does not block every ad and can be turned off if a site does not work.
 

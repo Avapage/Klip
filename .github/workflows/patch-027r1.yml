@@ -1,0 +1,90 @@
+name: Patch 0.2.7 R1 English and quotes
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - run: gradle --no-daemon :app:assembleDebug
+      - name: Check packages and signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin="$ANDROID_HOME/build-tools/35.0.0"
+          for variant in arm64 universal; do
+            apk="app/build/outputs/apk/$variant/debug/app-$variant-debug.apk"
+            "$bin/aapt" dump badging "$apk" > "$RUNNER_TEMP/$variant.txt"
+            grep -q "versionName='0.2.7 R1'" "$RUNNER_TEMP/$variant.txt"
+            grep -q "versionCode='14'" "$RUNNER_TEMP/$variant.txt"
+            grep -q "sdkVersion:'29'" "$RUNNER_TEMP/$variant.txt"
+            grep -q "arm64-v8a" "$RUNNER_TEMP/$variant.txt"
+            "$bin/apksigner" verify --verbose --min-sdk-version 23 --max-sdk-version 23 "$apk" | grep 'Verified using v1 scheme.*true'
+            "$bin/apksigner" verify --verbose --min-sdk-version 24 --max-sdk-version 27 "$apk" | grep 'Verified using v2 scheme.*true'
+            "$bin/apksigner" verify --verbose --min-sdk-version 29 "$apk" | grep 'Verified using v3 scheme.*true'
+          done
+          grep -q x86_64 "$RUNNER_TEMP/universal.txt"
+          grep -q armeabi-v7a "$RUNNER_TEMP/universal.txt"
+      - name: Preserve the current APKs before replacement
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p original-apks
+          gh release download klip-v0.2.7-r1 --pattern '*.apk' --dir original-apks
+          cd original-apks
+          echo 'd9348c8ef8d383515e91c7349938f348c9fffc9aa524defd8df4ea86420b82fd  Klip-0.2.7-R1-ARM64.apk' | sha256sum -c -
+          echo 'e67c126a595889d04d2991e7788bd743cb19f83e4f34984780629821dc9e1e19  Klip-0.2.7-R1-Universal.apk' | sha256sum -c -
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-0.2.7-r1-apks
+          path: original-apks/*.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Replace APKs and update release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cp app/build/outputs/apk/arm64/debug/app-arm64-debug.apk Klip-0.2.7-R1-ARM64.apk
+          cp app/build/outputs/apk/universal/debug/app-universal-debug.apk Klip-0.2.7-R1-Universal.apk
+          cat > notes.txt <<EOF
+          ## Klip 0.2.7 R1 for Android
+
+          Klip saves supported video and audio directly on your Android device. Android 10 or newer is required.
+
+          ### What's new
+          - The app interface is now in US English.
+          - A different saying from a collection of 100 appears when you reopen the app.
+          - Download history keeps up to 20 available files saved in Downloads/Klip.
+          - Klip's own code is licensed under GPL-3.0; bundled dependencies have their own license and source requirements.
+
+          ### Choose your APK
+          - **ARM64:** most modern Android phones.
+          - **Universal:** includes supported architectures in one larger APK.
+
+          APKs in this release were replaced with the updated R1 build. The build and APK signing checks passed; this update was not tested on an emulator.
+          The original release tag and GitHub-generated source archives refer to the earlier R1 build. The exact source for these replacement APKs is [commit $GITHUB_SHA](https://github.com/$GH_REPO/commit/$GITHUB_SHA).
+
+          These are debug builds. If Android reports a signing conflict, uninstall the older app before installing. App settings and browser sessions will be removed; files saved in Downloads remain. History may not show earlier files after reinstalling.
+          EOF
+          gh release upload klip-v0.2.7-r1 Klip-0.2.7-R1-ARM64.apk Klip-0.2.7-R1-Universal.apk --clobber
+          gh release edit klip-v0.2.7-r1 --notes-file notes.txt

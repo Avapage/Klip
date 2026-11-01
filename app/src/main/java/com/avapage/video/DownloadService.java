@@ -55,8 +55,8 @@ public class DownloadService extends Service {
         try {
             if(Build.VERSION.SDK_INT>=29) startForeground(NOTIFICATION,notification(),ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
             else startForeground(NOTIFICATION,notification());
-        } catch(RuntimeException e) { status="Tidak bisa memulai unduhan latar belakang."; update(status,0); stopSelf(startId); return START_NOT_STICKY; }
-        running=true; cancel=false; results=new ArrayList<>(); update("Menyiapkan unduhan...",0);
+        } catch(RuntimeException e) { status="Could not start a background download."; update(status,0); stopSelf(startId); return START_NOT_STICKY; }
+        running=true; cancel=false; results=new ArrayList<>(); update("Preparing download...",0);
         worker.execute(() -> runDownload(intent,startId));
         return START_NOT_STICKY;
     }
@@ -71,7 +71,7 @@ public class DownloadService extends Service {
         File dir=new File(getCacheDir(),"job-"+System.currentTimeMillis());
         ArrayList<SavedFile> saved=new ArrayList<>();
         try {
-            if(url==null || !dir.mkdirs()) throw new IOException("Tidak bisa menyiapkan unduhan");
+            if(url==null || !dir.mkdirs()) throw new IOException("Could not prepare the download");
             YoutubeDLRequest request=new YoutubeDLRequest(url);
             request.addOption("--no-playlist"); request.addOption("--no-mtime");
             request.addOption("--concurrent-fragments","8"); request.addOption("--abort-on-unavailable-fragments");
@@ -88,15 +88,15 @@ public class DownloadService extends Service {
             else if(selected==5) request.addOption("-f","bestaudio/best");
             else if(selected>=1 && selected<=3) { int h=selected==1?1080:selected==2?720:480; request.addOption("-f","bestvideo[height<="+h+"]+bestaudio/best[height<="+h+"]/best"); }
             else request.addOption("-f","bestvideo+bestaudio/best");
-            if(cancel) throw new IOException("Dibatalkan");
-            YoutubeDL.getInstance().execute(request,ID,(p,eta,line) -> { update(cancel?"Membatalkan unduhan...":line,Math.max(0,Math.min(100,(int)(float)p))); return Unit.INSTANCE; });
-            if(cancel) throw new IOException("Dibatalkan");
+            if(cancel) throw new IOException("Canceled");
+            YoutubeDL.getInstance().execute(request,ID,(p,eta,line) -> { update(cancel?"Canceling download...":line,Math.max(0,Math.min(100,(int)(float)p))); return Unit.INSTANCE; });
+            if(cancel) throw new IOException("Canceled");
             File[] files=dir.listFiles(f -> f.isFile() && !f.getName().equals(".cookies.txt") && !f.getName().endsWith(".part") && !f.getName().endsWith(".ytdl"));
-            if(files==null || files.length==0) throw new IOException("Tidak ada file yang dihasilkan");
-            for(File file:files) { if(cancel) throw new IOException("Dibatalkan"); saved.add(save(file)); }
-            results=saved; status="Selesai! File disimpan di Downloads/Klip."; percent=100;
+            if(files==null || files.length==0) throw new IOException("No file was produced");
+            for(File file:files) { if(cancel) throw new IOException("Canceled"); saved.add(save(file)); }
+            results=saved; status="Done! File saved in Downloads/Klip."; percent=100;
         } catch(Exception e) {
-            results=saved; status=!saved.isEmpty()?"Sebagian file disimpan; file lain gagal: "+message(e):cancel?"Unduhan dibatalkan.":"Unduhan gagal: "+message(e);
+            results=saved; status=!saved.isEmpty()?"Some files were saved; others failed: "+message(e):cancel?"Download canceled.":"Download failed: "+message(e);
         } finally {
             File[] files=dir.listFiles(); if(files!=null) for(File f:files) f.delete(); dir.delete();
             running=false; update(status,percent); stopForeground(STOP_FOREGROUND_REMOVE); stopSelf(startId);
@@ -107,7 +107,7 @@ public class DownloadService extends Service {
             pw.println("# Netscape HTTP Cookie File");
             appendCookies(pw,mediaUrl,mediaCookies);
             if(pageUrl!=null && !Objects.equals(Uri.parse(mediaUrl).getHost(),Uri.parse(pageUrl).getHost())) appendCookies(pw,pageUrl,pageCookies);
-            if(pw.checkError()) throw new IOException("Tidak bisa menulis cookies sementara");
+            if(pw.checkError()) throw new IOException("Could not write temporary cookies");
         }
     }
     private static void appendCookies(PrintWriter pw, String url, String cookies) {
@@ -123,19 +123,19 @@ public class DownloadService extends Service {
     }
     private SavedFile save(File file) throws IOException {
         File external=getExternalFilesDir(null);
-        if(external!=null && external.getUsableSpace()<file.length()) throw new IOException("Penyimpanan tidak cukup untuk menyimpan file.");
+        if(external!=null && external.getUsableSpace()<file.length()) throw new IOException("Not enough storage space to save the file.");
         ContentValues v=new ContentValues(); v.put(MediaStore.Downloads.DISPLAY_NAME,file.getName());
         int dot=file.getName().lastIndexOf('.'); String ext=dot>=0?file.getName().substring(dot+1).toLowerCase(Locale.ROOT):"";
         String mime=android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext); if(mime==null) mime="application/octet-stream";
         v.put(MediaStore.Downloads.MIME_TYPE,mime); v.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/Klip"); v.put(MediaStore.Downloads.IS_PENDING,1);
-        Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v); if(uri==null) throw new IOException("Tidak bisa membuat file");
+        Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v); if(uri==null) throw new IOException("Could not create the file");
         try {
             try(InputStream in=new FileInputStream(file); OutputStream out=getContentResolver().openOutputStream(uri)) {
-                if(out==null) throw new IOException("Tidak bisa membuka file"); byte[] buf=new byte[65536]; int n;
-                while((n=in.read(buf))!=-1) { if(cancel) throw new IOException("Dibatalkan"); out.write(buf,0,n); }
+                if(out==null) throw new IOException("Could not open the file"); byte[] buf=new byte[65536]; int n;
+                while((n=in.read(buf))!=-1) { if(cancel) throw new IOException("Canceled"); out.write(buf,0,n); }
             }
             ContentValues done=new ContentValues(); done.put(MediaStore.Downloads.IS_PENDING,0);
-            if(getContentResolver().update(uri,done,null,null)!=1) throw new IOException("Tidak bisa menyelesaikan penyimpanan");
+            if(getContentResolver().update(uri,done,null,null)!=1) throw new IOException("Could not finish saving the file");
         } catch(IOException|RuntimeException e) { getContentResolver().delete(uri,null,null); throw e; }
         String name=file.getName();
         try(android.database.Cursor c=getContentResolver().query(uri,new String[]{MediaStore.Downloads.DISPLAY_NAME},null,null,null)) { if(c!=null && c.moveToFirst()) name=c.getString(0); } catch(RuntimeException ignored) { }
