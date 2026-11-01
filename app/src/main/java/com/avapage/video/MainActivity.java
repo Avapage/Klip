@@ -37,6 +37,8 @@ public class MainActivity extends Activity {
     private volatile boolean downloading = false;
     private volatile boolean cancelRequested = false;
     private String browserUrl, browserReferer, browserUserAgent, browserCookies, browserPageUrl, browserPageCookies;
+    private String estimatedUrl;
+    private long estimatedBytes;
     private final String processId = "avapage-download";
 
     @Override public void onCreate(Bundle state) {
@@ -169,6 +171,8 @@ public class MainActivity extends Activity {
                 DownloadService.writeCookies(cookieFile,url,cookies,page,pageCookies); request.addOption("--cookies",cookieFile.getAbsolutePath());
             }
             VideoInfo info=YoutubeDL.getInstance().getInfo(request);
+            long size=Math.max(info.getFileSize(), info.getFileSizeApproximate());
+            runOnUiThread(() -> { estimatedUrl=url; estimatedBytes=size; });
             String name=info.getTitle()==null ? "Video" : info.getTitle();
             int seconds=info.getDuration(); String duration=seconds>0 ? String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60) : "Durasi tidak tersedia";
             String uploader=info.getUploader()==null ? "" : "\n"+info.getUploader();
@@ -198,6 +202,20 @@ public class MainActivity extends Activity {
     }
     private void download() {
         String url=validUrl(); if(url==null || DownloadService.isRunning()) return;
+        File target=getExternalFilesDir(null);
+        long free=Math.min(getCacheDir().getUsableSpace(), target==null?Long.MAX_VALUE:target.getUsableSpace());
+        if(url.equals(estimatedUrl) && estimatedBytes>0 && estimatedBytes>free/2) {
+            new AlertDialog.Builder(this).setTitle("Ruang penyimpanan mungkin tidak cukup")
+                .setMessage("File sementara dan hasil akhir membutuhkan ruang. Ukuran video ini hanya perkiraan.")
+                .setNegativeButton("Batal",null).setPositiveButton("Lanjutkan",(dialog,which) -> startDownload(url)).show();
+            return;
+        }
+        startDownload(url);
+    }
+    private void startDownload(String url) {
+        if(DownloadService.isRunning()) return;
+        if(android.os.Build.VERSION.SDK_INT>=33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
         Intent intent=new Intent(this,DownloadService.class);
         intent.putExtra("url",url); intent.putExtra("format",format.getSelectedItemPosition());
         if(url.equals(browserUrl)) { intent.putExtra("ref",browserReferer); intent.putExtra("agent",browserUserAgent); intent.putExtra("cookies",browserCookies); intent.putExtra("page_url",browserPageUrl); intent.putExtra("page_cookies",browserPageCookies); }
