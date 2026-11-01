@@ -59,4 +59,29 @@ done
 adb pull /sdcard/Download/Klip "$work/result" >/dev/null
 output="$(find "$work/result" -type f -name '*.mp4' -print -quit)"
 [[ -n "$output" ]] && ffprobe -v error -show_entries format=duration -of default=nw=1 "$output"
-echo 'Background download smoke test passed'
+# Force-stop to verify the history survives a process restart.
+adb shell am force-stop com.avapage.video
+adb shell am start -n com.avapage.video/.MainActivity
+sleep 8
+found_history=''
+for attempt in $(seq 1 8); do
+  adb shell input swipe 160 520 160 200 350
+  adb shell uiautomator dump /sdcard/history.xml >/dev/null
+  adb pull /sdcard/history.xml "$work/history.xml" >/dev/null 2>&1
+  point="$(python3 - "$work/history.xml" <<'PY'
+import re, sys, xml.etree.ElementTree as E
+for e in E.parse(sys.argv[1]).iter('node'):
+    if e.get('text','').lower()=='riwayat unduhan':
+        m=re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',e.get('bounds',''))
+        if m:
+            x,y,X,Y=map(int,m.groups())
+            if X>x and Y>y and (y+Y)//2<580: print((x+X)//2,(y+Y)//2)
+PY
+)"
+  if [[ -n "$point" ]]; then adb shell input tap $point; found_history=1; break; fi
+done
+[[ -n "$found_history" ]] || { echo 'History button was not visible' >&2; exit 1; }
+adb shell uiautomator dump /sdcard/history-dialog.xml >/dev/null
+adb pull /sdcard/history-dialog.xml "$work/history-dialog.xml" >/dev/null 2>&1
+grep -qi 'sample.*mp4' "$work/history-dialog.xml" || { echo 'Downloaded file missing from history' >&2; cat "$work/history-dialog.xml"; exit 1; }
+echo 'Background download and persistent history smoke test passed'
