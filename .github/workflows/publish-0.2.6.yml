@@ -51,8 +51,10 @@ jobs:
           - Startup no longer waits for the automatic engine update check; the check is deferred until the app is idle.
           - Clearer labels for detected media, including the stream type, host and path. You choose the source.
           - System-bar spacing for the main screen and browser on newer Android versions.
-          - Safer handoff of detected media and browser session context.
-          - An available-space check before saving completed files, plus an app version label based on the installed package.
+          - Safer handoff of detected media, with browser context available to information checks and downloads.
+          - Storage warnings when an estimate is available, a completed-file space check, and a refreshed app icon.
+          - Video format selection now prefers compatible codecs when available, and stale temporary job files are cleaned up.
+          - The displayed app version comes from the installed package.
           - Improvements to the build process that prevent ordinary updates from replacing existing release files.
 
           ### Choose your APK
