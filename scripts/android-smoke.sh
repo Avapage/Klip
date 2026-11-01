@@ -16,7 +16,7 @@ class Slow(http.server.SimpleHTTPRequestHandler):
             time.sleep(.25)
 http.server.ThreadingHTTPServer(('0.0.0.0',8765),Slow).serve_forever()
 PY
-(cd "$work" && python3 server.py >/dev/null 2>&1) & server_pid=$!
+(cd "$work" && python3 -u server.py >"$work/server.log" 2>&1) & server_pid=$!
 adb wait-for-device
 adb install -r app/build/outputs/apk/universal/debug/app-universal-debug.apk
 adb shell pm grant com.avapage.video android.permission.POST_NOTIFICATIONS 2>/dev/null || true
@@ -43,13 +43,15 @@ PY
 done
 [[ -n "$clicked" ]] || { echo 'Download button did not become available' >&2; exit 1; }
 sleep 5
+adb shell uiautomator dump /sdcard/before-home.xml >/dev/null || true
+adb shell cat /sdcard/before-home.xml || true
 adb shell input keyevent KEYCODE_HOME
 found=''
 for attempt in $(seq 1 36); do
   sleep 5
   if adb shell ls /sdcard/Download/Klip/ 2>/dev/null | tr -d '\r' | grep -q '\.mp4$'; then found=1; break; fi
 done
-[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; adb shell uiautomator dump /sdcard/failure.xml >/dev/null || true; adb shell cat /sdcard/failure.xml || true; adb logcat -d -s AndroidRuntime:E ActivityManager:W; exit 1; }
+[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; cat "$work/server.log" || true; adb shell am start -n com.avapage.video/.MainActivity || true; sleep 3; adb shell uiautomator dump /sdcard/failure.xml >/dev/null || true; adb shell cat /sdcard/failure.xml || true; adb logcat -d -s AndroidRuntime:E ActivityManager:W; exit 1; }
 adb pull /sdcard/Download/Klip "$work/result" >/dev/null
 output="$(find "$work/result" -type f -name '*.mp4' -print -quit)"
 [[ -n "$output" ]] && ffprobe -v error -show_entries format=duration -of default=nw=1 "$output"
