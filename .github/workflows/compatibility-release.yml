@@ -32,10 +32,9 @@ jobs:
             grep -q "sdkVersion:'29'" "$RUNNER_TEMP/$variant.txt"
             grep -q "versionName='0.2.7'" "$RUNNER_TEMP/$variant.txt"
             grep -q 'arm64-v8a' "$RUNNER_TEMP/$variant.txt"
-            "$toolsdir/apksigner" verify --verbose "$apk" | tee "$RUNNER_TEMP/$variant-sign.txt"
-            grep -q 'Verified using v1 scheme.*true' "$RUNNER_TEMP/$variant-sign.txt"
-            grep -q 'Verified using v2 scheme.*true' "$RUNNER_TEMP/$variant-sign.txt"
-            grep -q 'Verified using v3 scheme.*true' "$RUNNER_TEMP/$variant-sign.txt"
+            "$toolsdir/apksigner" verify --verbose --min-sdk-version 23 --max-sdk-version 23 "$apk" | grep 'Verified using v1 scheme.*true'
+            "$toolsdir/apksigner" verify --verbose --min-sdk-version 24 --max-sdk-version 27 "$apk" | grep 'Verified using v2 scheme.*true'
+            "$toolsdir/apksigner" verify --verbose --min-sdk-version 29 "$apk" | grep 'Verified using v3 scheme.*true'
           done
           grep -q 'x86_64' "$RUNNER_TEMP/universal.txt"
           grep -q 'armeabi-v7a' "$RUNNER_TEMP/universal.txt"
