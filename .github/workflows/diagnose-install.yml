@@ -44,12 +44,13 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
-          target: google_apis
+          api-level: 35
+          target: google_apis_ps16k
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
             adb shell getprop ro.product.cpu.abilist
+            adb shell getconf PAGE_SIZE
             adb install apks/arm64.apk
             adb shell am start -n com.avapage.video/.MainActivity
             sleep 10
