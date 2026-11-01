@@ -20,6 +20,7 @@ import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.mapper.VideoInfo;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import kotlin.Unit;
 
@@ -136,6 +137,7 @@ public class MainActivity extends Activity {
         status = text("Menyiapkan aplikasi...", 14, muted); status.setTextIsSelectable(true); status.setPadding(0,16,0,0); root.addView(status);
         resultList=new LinearLayout(this); resultList.setOrientation(LinearLayout.VERTICAL); resultList.setVisibility(View.GONE);
         resultList.setPadding(dp(16),dp(14),dp(16),dp(14)); resultList.setBackground(rounded(Color.rgb(25,34,49),14)); root.addView(resultList);
+        Button history=new Button(this); history.setText("Riwayat unduhan"); root.addView(history); history.setOnClickListener(v -> showHistory());
         update = new Button(this); update.setText("Pembaruan mesin"); root.addView(update); update.setOnClickListener(v -> chooseUpdate());
         TextView note = text("Hasil disimpan di Downloads / Klip. Unduhan dapat berlanjut di latar belakang.", 13, muted); note.setPadding(0,dp(24),0,0); root.addView(note);
     }
@@ -199,6 +201,31 @@ public class MainActivity extends Activity {
             resultList.setVisibility(View.VISIBLE);
             screen.post(() -> screen.smoothScrollTo(0,resultList.getTop()));
         });
+    }
+    private void showHistory() {
+        ArrayList<DownloadService.SavedFile> files=new ArrayList<>();
+        Uri collection=MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+        String[] columns={MediaStore.Downloads._ID,MediaStore.Downloads.DISPLAY_NAME,MediaStore.Downloads.MIME_TYPE};
+        try (android.database.Cursor c=getContentResolver().query(collection,columns,
+                MediaStore.Downloads.RELATIVE_PATH+"=? AND "+MediaStore.Downloads.OWNER_PACKAGE_NAME+"=? AND "+MediaStore.Downloads.IS_PENDING+"=0",
+                new String[]{Environment.DIRECTORY_DOWNLOADS+"/Klip/",getPackageName()},
+                MediaStore.Downloads.DATE_ADDED+" DESC, "+MediaStore.Downloads._ID+" DESC")) {
+            if(c!=null) while(c.moveToNext() && files.size()<20) {
+                Uri uri=android.content.ContentUris.withAppendedId(collection,c.getLong(0));
+                String name=c.getString(1), mime=c.getString(2);
+                files.add(new DownloadService.SavedFile(uri,name==null?"File":name,mime==null?"application/octet-stream":mime));
+            }
+        } catch (RuntimeException e) {
+            Toast.makeText(this,"Riwayat tidak bisa dibaca.",Toast.LENGTH_LONG).show(); return;
+        }
+        if(files.isEmpty()) { new AlertDialog.Builder(this).setTitle("Riwayat unduhan").setMessage("Belum ada file tersimpan di Downloads/Klip.").setPositiveButton("Tutup",null).show(); return; }
+        String[] names=new String[files.size()]; for(int i=0;i<files.size();i++) names[i]=files.get(i).name;
+        new AlertDialog.Builder(this).setTitle("Riwayat unduhan").setItems(names,(dialog,which) -> {
+            DownloadService.SavedFile file=files.get(which);
+            Intent open=new Intent(Intent.ACTION_VIEW).setDataAndType(file.uri,file.mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            try { startActivity(open); }
+            catch(android.content.ActivityNotFoundException|SecurityException e) { Toast.makeText(this,"File tidak bisa dibuka. Periksa Downloads/Klip.",Toast.LENGTH_LONG).show(); }
+        }).setNegativeButton("Tutup",null).show();
     }
     private void download() {
         String url=validUrl(); if(url==null || DownloadService.isRunning()) return;

@@ -6,4 +6,4 @@ Klip uses components maintained by other projects. Consult their current license
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) provides media extraction and downloading. See its repository for its license and component notices.
 - [FFmpeg](https://ffmpeg.org/legal.html) provides media processing. Licensing obligations depend on the specific FFmpeg build and enabled components.
 
-This file identifies upstream projects; it is not a complete dependency or legal compliance audit. The Klip project license has not yet been selected by its owner.
+This file identifies upstream projects; it is not a complete dependency or legal compliance audit. Klip's own code is licensed under GPL-3.0-only; see LICENSE. This does not replace the separate source, license, and notice obligations for bundled dependencies.
