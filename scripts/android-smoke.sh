@@ -18,7 +18,7 @@ http.server.ThreadingHTTPServer(('0.0.0.0',8765),Slow).serve_forever()
 PY
 (cd "$work" && python3 server.py >/dev/null 2>&1) & server_pid=$!
 adb wait-for-device
-adb install -r app/build/outputs/apk/debug/app-x86_64-debug.apk
+adb install -r app/build/outputs/apk/universal/debug/app-universal-debug.apk
 adb shell am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT 'http://10.0.2.2:8765/sample.mp4' -n com.avapage.video/.MainActivity
 # Wait for the engine to initialize and for the start button to become enabled.
 clicked=''
