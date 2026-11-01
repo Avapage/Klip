@@ -16,9 +16,10 @@ class Slow(http.server.SimpleHTTPRequestHandler):
             time.sleep(.25)
 http.server.ThreadingHTTPServer(('0.0.0.0',8765),Slow).serve_forever()
 PY
-(cd "$work" && python3 server.py >/dev/null 2>&1) & server_pid=$!
+(cd "$work" && python3 -u server.py >"$work/server.log" 2>&1) & server_pid=$!
 adb wait-for-device
-adb install -r app/build/outputs/apk/debug/app-x86_64-debug.apk
+adb install -r app/build/outputs/apk/universal/debug/app-universal-debug.apk
+adb shell pm grant com.avapage.video android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 adb shell am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT 'http://10.0.2.2:8765/sample.mp4' -n com.avapage.video/.MainActivity
 # Wait for the engine to initialize and for the start button to become enabled.
 clicked=''
@@ -37,18 +38,24 @@ for e in root.iter('node'):
             if X>x and Y>y: print((x+X)//2,(y+Y)//2)
 PY
 )"
-  if [[ -n "$point" ]]; then adb shell input tap $point; clicked=1; break; fi
+  if [[ -n "$point" ]]; then
+    read -r x y <<< "$point"
+    if (( y >= 580 )); then adb shell input swipe 160 540 160 260 350; continue; fi
+    adb shell input tap "$x" "$y"; clicked=1; break
+  fi
   adb shell input swipe 160 520 160 220 300 || true
 done
 [[ -n "$clicked" ]] || { echo 'Download button did not become available' >&2; exit 1; }
 sleep 5
+adb shell uiautomator dump /sdcard/before-home.xml >/dev/null || true
+adb shell cat /sdcard/before-home.xml || true
 adb shell input keyevent KEYCODE_HOME
 found=''
 for attempt in $(seq 1 36); do
   sleep 5
   if adb shell ls /sdcard/Download/Klip/ 2>/dev/null | tr -d '\r' | grep -q '\.mp4$'; then found=1; break; fi
 done
-[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; adb logcat -d -s AndroidRuntime:E; exit 1; }
+[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; cat "$work/server.log" || true; adb shell am start -n com.avapage.video/.MainActivity || true; sleep 3; adb shell uiautomator dump /sdcard/failure.xml >/dev/null || true; adb shell cat /sdcard/failure.xml || true; adb logcat -d -s AndroidRuntime:E ActivityManager:W; exit 1; }
 adb pull /sdcard/Download/Klip "$work/result" >/dev/null
 output="$(find "$work/result" -type f -name '*.mp4' -print -quit)"
 [[ -n "$output" ]] && ffprobe -v error -show_entries format=duration -of default=nw=1 "$output"

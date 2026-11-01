@@ -4,19 +4,19 @@ Klip is an Android video and audio downloader that uses [yt-dlp](https://github.
 
 **Android 10 or newer** · No Klip download server · Free to use · Preview build
 
-[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
+[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
 
 ## Download Klip for Android
 
-The three latest app versions are listed below. Choose 0.2.6 for the latest changes.
+The three latest app versions are listed below. Choose 0.2.7 for the latest changes.
 
 | Version | Description | Download |
 | --- | --- | --- |
+| **0.2.7** | Standalone ARM64 and Universal APKs with expanded APK signing-scheme support and installation checks. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7) |
 | **0.2.6** | Background downloads, clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
 | **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
-| **0.2.4** | Earlier version with media detection and download format options. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.4) |
 
-For 0.2.6, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
+For 0.2.7, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
 
 ## Features
 
@@ -69,4 +69,4 @@ Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, o
 ./gradlew :app:assembleDebug
 ```
 
-APKs are created in `app/build/outputs/apk/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license. See [third-party notices](THIRD_PARTY_NOTICES.md).
+APKs are created in `app/build/outputs/apk/arm64/debug/` and `app/build/outputs/apk/universal/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license. See [third-party notices](THIRD_PARTY_NOTICES.md).
