@@ -27,6 +27,7 @@ For 0.2.7, choose ARM64 for most modern Android phones, or Universal if you are 
 - Download up to eight HLS/DASH fragments concurrently when the source and downloader support it.
 - Run a user-started download in the background while Android permits the foreground service to run.
 - Open a completed download from the app. Files are saved to **Downloads/Klip**.
+- View up to 20 recent Klip files saved in Downloads/Klip after restarting the app. Removed files no longer appear.
 - Cancel downloads and check for yt-dlp updates automatically or manually.
 
 Klip runs the downloader on the device. Actual download speed depends on the source and your connection. Not every site, media format, or video is supported.
@@ -70,3 +71,7 @@ Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, o
 ```
 
 APKs are created in `app/build/outputs/apk/arm64/debug/` and `app/build/outputs/apk/universal/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license. See [third-party notices](THIRD_PARTY_NOTICES.md).
+
+## License
+
+Klip's own code is licensed under [GPL-3.0-only](LICENSE). Bundled dependencies have their own licenses and distribution requirements; see [third-party notices](THIRD_PARTY_NOTICES.md).
