@@ -1,4 +1,4 @@
-name: APK compatibility and 0.2.7 release
+name: APK compatibility and 0.2.7 R1 release
 on:
   pull_request:
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
             apk="app/build/outputs/apk/$variant/debug/app-$variant-debug.apk"
             "$toolsdir/aapt" dump badging "$apk" | tee "$RUNNER_TEMP/$variant.txt"
             grep -q "sdkVersion:'29'" "$RUNNER_TEMP/$variant.txt"
-            grep -q "versionName='0.2.7'" "$RUNNER_TEMP/$variant.txt"
+            grep -q "versionName='0.2.7 R1'" "$RUNNER_TEMP/$variant.txt"
             grep -q 'arm64-v8a' "$RUNNER_TEMP/$variant.txt"
             "$toolsdir/apksigner" verify --verbose --min-sdk-version 23 --max-sdk-version 23 "$apk" | grep 'Verified using v1 scheme.*true'
             "$toolsdir/apksigner" verify --verbose --min-sdk-version 24 --max-sdk-version 27 "$apk" | grep 'Verified using v2 scheme.*true'
@@ -74,18 +74,31 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if gh api "repos/$GH_REPO/git/ref/tags/klip-v0.2.7" >/dev/null 2>&1 || gh release view klip-v0.2.7 >/dev/null 2>&1; then
+          if gh api "repos/$GH_REPO/git/ref/tags/klip-v0.2.7-r1" >/dev/null 2>&1 || gh release view klip-v0.2.7-r1 >/dev/null 2>&1; then
             echo 'Release or tag already exists; refusing to overwrite.' >&2
             exit 1
           fi
           arm="$(find apks -name app-arm64-debug.apk -print -quit)"
           universal="$(find apks -name app-universal-debug.apk -print -quit)"
           test -n "$arm" && test -n "$universal"
-          cp "$arm" Klip-0.2.7-ARM64.apk
-          cp "$universal" Klip-0.2.7-Universal.apk
+          cp "$arm" Klip-0.2.7-R1-ARM64.apk
+          cp "$universal" Klip-0.2.7-R1-Universal.apk
           cat > notes.txt <<'EOF'
-          Klip 0.2.7 provides standalone ARM64 and Universal APKs for Android 10 and newer. Both APKs use additional signing schemes and were checked for installation and launch on an Android 16 emulator. The cause of the reported phone-specific installation error has not been confirmed.
-          
-          Choose ARM64 for most modern phones, or Universal if unsure. These are debug preview builds. If Android reports an update-signature conflict, uninstall the old app first; files saved in Downloads remain, but app settings and browser sessions are removed.
+          ## Klip 0.2.7 R1 for Android
+
+          Klip saves supported video and audio directly on your Android device. Android 10 or newer is required.
+
+          ### What's new
+          - View up to 20 recent Klip files saved in Downloads/Klip, even after restarting the app. Tap an entry to open it.
+          - Added a GPL-3.0 license for Klip's own code. Bundled dependencies have their own license and source requirements.
+
+          ### Choose your APK
+          - **ARM64:** most modern Android phones.
+          - **Universal:** includes supported architectures in one larger APK.
+
+          Both release APKs were checked for installation and launch on an Android 16 emulator. Background downloads and history after restarting the app were tested on Android 10, 15, and 16 emulators.
+
+          These are debug builds. If Android rejects an update because its signing key differs, uninstall the old app first. App settings and browser sessions will be removed; files already saved in Downloads remain. History can only show files still available to the app.
+
           EOF
-          gh release create klip-v0.2.7 Klip-0.2.7-ARM64.apk Klip-0.2.7-Universal.apk --target "$GITHUB_SHA" --title "Klip 0.2.7 for Android" --notes-file notes.txt --latest
+          gh release create klip-v0.2.7-r1 Klip-0.2.7-R1-ARM64.apk Klip-0.2.7-R1-Universal.apk --target "$GITHUB_SHA" --title "Klip 0.2.7 R1 for Android" --notes-file notes.txt --latest

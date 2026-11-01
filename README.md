@@ -4,19 +4,19 @@ Klip is an Android video and audio downloader that uses [yt-dlp](https://github.
 
 **Android 10 or newer** · No Klip download server · Free to use · Preview build
 
-[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
+[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7-r1) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
 
 ## Download Klip for Android
 
-The three latest app versions are listed below. Choose 0.2.7 for the latest changes.
+The three latest app versions are listed below. Choose 0.2.7 R1 for the latest changes.
 
 | Version | Description | Download |
 | --- | --- | --- |
-| **0.2.7** | Standalone ARM64 and Universal APKs with expanded APK signing-scheme support and installation checks. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7) |
+| **0.2.7 R1** | Adds persistent download history and a GPL-3.0 license, with ARM64 and Universal APKs. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7-r1) |
 | **0.2.6** | Background downloads, clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
 | **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
 
-For 0.2.7, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
+For 0.2.7 R1, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
 
 ## Features
 
