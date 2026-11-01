@@ -9,6 +9,10 @@ permissions:
   contents: read
 jobs:
   emulator:
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [29, 35, 36]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -33,7 +37,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: ${{ matrix.api }}
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
