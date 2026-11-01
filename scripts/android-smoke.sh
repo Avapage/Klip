@@ -38,7 +38,7 @@ for e in root.iter('node'):
 PY
 )"
   if [[ -n "$point" ]]; then adb shell input tap $point; clicked=1; break; fi
-  adb shell input swipe 500 1600 500 600 300 || true
+  adb shell input swipe 160 520 160 220 300 || true
 done
 [[ -n "$clicked" ]] || { echo 'Download button did not become available' >&2; exit 1; }
 sleep 5
