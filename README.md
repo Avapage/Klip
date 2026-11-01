@@ -63,10 +63,10 @@ Downloads are processed on your device without a Klip download server. When you 
 
 ## Build from source
 
-Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, or use Gradle 8.10.2:
+Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, or use the included Gradle wrapper:
 
 ```bash
-gradle :app:assembleDebug
+./gradlew :app:assembleDebug
 ```
 
-APKs are created in `app/build/outputs/apk/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license.
+APKs are created in `app/build/outputs/apk/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license. See [third-party notices](THIRD_PARTY_NOTICES.md).
