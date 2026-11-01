@@ -45,9 +45,16 @@ jobs:
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
+          target: google_apis
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
+            adb shell getprop ro.product.cpu.abilist
+            adb install apks/arm64.apk
+            adb shell am start -n com.avapage.video/.MainActivity
+            sleep 10
+            adb shell dumpsys activity activities | grep -i com.avapage.video
+            adb uninstall com.avapage.video
             adb install apks/universal.apk
             adb shell am start -n com.avapage.video/.MainActivity
             sleep 10
