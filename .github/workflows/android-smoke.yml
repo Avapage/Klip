@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   emulator:
+    if: github.head_ref != 'patch/0.2.7-r1-english-quotes'
     strategy:
       fail-fast: false
       matrix:

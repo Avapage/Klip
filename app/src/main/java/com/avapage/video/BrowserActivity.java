@@ -37,27 +37,27 @@ public class BrowserActivity extends Activity {
             return insets;
         });
         LinearLayout bar=new LinearLayout(this); root.addView(bar);
-        address=new EditText(this); address.setSingleLine(); address.setTextColor(Color.WHITE); address.setHintTextColor(Color.LTGRAY); address.setHint("https://alamat-situs.com");
+        address=new EditText(this); address.setSingleLine(); address.setTextColor(Color.WHITE); address.setHintTextColor(Color.LTGRAY); address.setHint("https://example.com");
         bar.addView(address,new LinearLayout.LayoutParams(0,-2,1));
-        Button go=new Button(this); go.setText("Buka"); bar.addView(go);
+        Button go=new Button(this); go.setText("Go"); bar.addView(go);
         adBlock=getSharedPreferences("browser",MODE_PRIVATE).getBoolean("ad_block",true);
-        shield=new Button(this); shield.setText(adBlock?"Blokir iklan: AKTIF":"Blokir iklan: NONAKTIF"); root.addView(shield);
+        shield=new Button(this); shield.setText(adBlock?"Ad blocking: ON":"Ad blocking: OFF"); root.addView(shield);
         shield.setOnClickListener(v -> {
             adBlock=!adBlock; getSharedPreferences("browser",MODE_PRIVATE).edit().putBoolean("ad_block",adBlock).apply();
-            shield.setText(adBlock?"Blokir iklan: AKTIF":"Blokir iklan: NONAKTIF");
+            shield.setText(adBlock?"Ad blocking: ON":"Ad blocking: OFF");
             web.getSettings().setSupportMultipleWindows(adBlock);
             web.getSettings().setJavaScriptCanOpenWindowsAutomatically(!adBlock);
             if(web.getUrl()!=null) web.reload();
         });
-        TextView hint=new TextView(this); hint.setTextColor(Color.LTGRAY); hint.setPadding(16,8,16,8); hint.setText("Putar video, lalu periksa media yang terdeteksi. Tidak semua situs menampilkan tautan langsung."); root.addView(hint);
+        TextView hint=new TextView(this); hint.setTextColor(Color.LTGRAY); hint.setPadding(16,8,16,8); hint.setText("Play the video, then check detected media. Not all sites expose direct links."); root.addView(hint);
         web=new WebView(this); root.addView(web,new LinearLayout.LayoutParams(-1,0,1));
-        media=new Button(this); media.setText("Media terdeteksi: 0"); root.addView(media); setContentView(root);
+        media=new Button(this); media.setText("Detected media: 0"); root.addView(media); setContentView(root);
         web.getSettings().setJavaScriptEnabled(true); web.getSettings().setDomStorageEnabled(true);
         web.getSettings().setSupportMultipleWindows(adBlock); web.getSettings().setJavaScriptCanOpenWindowsAutomatically(!adBlock);
         web.getSettings().setAllowFileAccess(false); web.getSettings().setAllowContentAccess(false);
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
-            @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon) { address.setText(url); synchronized(links) { links.clear(); referers.clear(); } media.setText("Media terdeteksi: 0"); }
+            @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon) { address.setText(url); synchronized(links) { links.clear(); referers.clear(); } media.setText("Detected media: 0"); }
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest req) {
                 String s=req.getUrl().getScheme();
                 return !("https".equalsIgnoreCase(s) || "http".equalsIgnoreCase(s)) || isBlockedAd(req.getUrl());
@@ -84,8 +84,8 @@ public class BrowserActivity extends Activity {
     private void open(String value) {
         if(!value.contains("://")) value="https://"+value;
         Uri uri=Uri.parse(value); String scheme=uri.getScheme();
-        if(uri.getHost()==null || !("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))) { address.setError("Alamat tidak valid"); return; }
-        synchronized(links) { links.clear(); referers.clear(); } media.setText("Media terdeteksi: 0"); web.loadUrl(uri.toString());
+        if(uri.getHost()==null || !("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))) { address.setError("Invalid address"); return; }
+        synchronized(links) { links.clear(); referers.clear(); } media.setText("Detected media: 0"); web.loadUrl(uri.toString());
     }
     private void observe(Uri uri, String referer) {
         if(uri==null || uri.getScheme()==null || !(uri.getScheme().equalsIgnoreCase("https") || uri.getScheme().equalsIgnoreCase("http"))) return;
@@ -97,7 +97,7 @@ public class BrowserActivity extends Activity {
     private void addCandidate(Uri uri, String referer) {
         if(uri==null || uri.getScheme()==null || !(uri.getScheme().equalsIgnoreCase("https") || uri.getScheme().equalsIgnoreCase("http"))) return;
         int count; synchronized(links) { links.add(uri.toString()); if(referer!=null && !referer.isEmpty()) referers.put(uri.toString(),referer); count=links.size(); }
-        runOnUiThread(() -> media.setText("Media terdeteksi: "+count));
+        runOnUiThread(() -> media.setText("Detected media: "+count));
     }
     private void scanPage() {
         String js="(function(){let a=[];function add(u){if(typeof u==='string'&&/^https?:/i.test(u))a.push(u)};"
@@ -112,7 +112,7 @@ public class BrowserActivity extends Activity {
     }
     private void showMedia() {
         ArrayList<String> results; synchronized(links) { results=new ArrayList<>(links); }
-        if(results.isEmpty()) { Toast.makeText(this,"Belum ada media terdeteksi. Putar videonya dahulu.",Toast.LENGTH_LONG).show(); return; }
+        if(results.isEmpty()) { Toast.makeText(this,"No media detected yet. Play the video first.",Toast.LENGTH_LONG).show(); return; }
         CharSequence[] labels=new CharSequence[results.size()];
         for(int i=0;i<results.size();i++) {
             Uri u=Uri.parse(results.get(i)); String p=u.getLastPathSegment();
@@ -126,14 +126,14 @@ public class BrowserActivity extends Activity {
             String query=u.getEncodedQuery()==null?"":" · query parameters present";
             labels[i]=(i+1)+". "+kind+" · "+name+"\n"+u.getHost()+parent+query;
         }
-        new AlertDialog.Builder(this).setTitle("Pilih tautan media").setItems(labels,(d,n) -> {
+        new AlertDialog.Builder(this).setTitle("Choose a media link").setItems(labels,(d,n) -> {
             String selected=results.get(n); String ref; synchronized(links) { ref=referers.get(selected); }
             if(ref==null || ref.isEmpty()) ref=web.getUrl();
             Intent i=new Intent(); i.putExtra("media_url",selected);
             i.putExtra("media_referer",ref); i.putExtra("media_user_agent",web.getSettings().getUserAgentString());
             i.putExtra("media_cookies",CookieManager.getInstance().getCookie(selected));
             String pageUrl=web.getUrl(); i.putExtra("page_url",pageUrl); if(pageUrl!=null) i.putExtra("page_cookies",CookieManager.getInstance().getCookie(pageUrl)); setResult(RESULT_OK,i); finish();
-        }).setNegativeButton("Tutup",null).show();
+        }).setNegativeButton("Close",null).show();
     }
     @Override public void onBackPressed() { if(web.canGoBack()) web.goBack(); else super.onBackPressed(); }
     @Override protected void onDestroy() { web.destroy(); super.onDestroy(); }

@@ -31,7 +31,7 @@ for attempt in $(seq 1 24); do
 import re, sys, xml.etree.ElementTree as E
 root=E.parse(sys.argv[1]).getroot()
 for e in root.iter('node'):
-    if e.get('text','').lower()=='mulai download' and e.get('enabled')=='true':
+    if e.get('text','').lower()=='start download' and e.get('enabled')=='true':
         match=re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',e.get('bounds',''))
         if match:
             x,y,X,Y=map(int,match.groups())
@@ -71,7 +71,7 @@ for attempt in $(seq 1 8); do
   point="$(python3 - "$work/history.xml" <<'PY'
 import re, sys, xml.etree.ElementTree as E
 for e in E.parse(sys.argv[1]).iter('node'):
-    if e.get('text','').lower()=='riwayat unduhan':
+    if e.get('text','').lower()=='download history':
         m=re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',e.get('bounds',''))
         if m:
             x,y,X,Y=map(int,m.groups())

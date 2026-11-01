@@ -55,8 +55,8 @@ public class MainActivity extends Activity {
                 YoutubeDL.getInstance().init(getApplicationContext());
                 FFmpeg.getInstance().init(getApplicationContext());
                 ready = true;
-                if (!DownloadService.isRunning()) show("Siap. Tempel tautan video untuk mulai.");
-            } catch (Exception e) { show("Gagal menyiapkan mesin: " + message(e)); }
+                if (!DownloadService.isRunning()) show("Ready. Paste a video link to get started.");
+            } catch (Exception e) { show("Could not initialize the downloader: " + message(e)); }
             runOnUiThread(() -> {
                 setBusy(false);
                 if (ready) getWindow().getDecorView().postDelayed(this::checkAutoUpdateWhenIdle, 30000);
@@ -119,49 +119,57 @@ public class MainActivity extends Activity {
         String version;
         try { version=getPackageManager().getPackageInfo(getPackageName(),0).versionName; }
         catch(android.content.pm.PackageManager.NameNotFoundException e) { version=""; }
-        TextView badge = text("KLIP  /  "+version, 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f); root.addView(badge);
-        TextView title = text("Simpan yang\npenting.", 36, white); title.setTypeface(Typeface.DEFAULT,Typeface.BOLD); title.setPadding(0,dp(16),0,dp(12)); root.addView(title);
-        TextView intro = text("Klip mengambil video dan audio langsung ke perangkatmu.", 16, muted); intro.setPadding(0,0,0,dp(28)); root.addView(intro);
-        TextView label = text("TAUTAN VIDEO", 12, muted); root.addView(label);
-        link = new EditText(this); link.setSingleLine(false); link.setMinLines(2); link.setTextColor(white); link.setHintTextColor(muted); link.setHint("Tempel tautan di sini..."); link.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI); link.setBackground(rounded(Color.rgb(30,39,57),14)); link.setPadding(dp(16),dp(12),dp(16),dp(12)); root.addView(link);
+        LinearLayout header = new LinearLayout(this); header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.TOP); root.addView(header);
+        TextView badge = text("KLIP  /  "+version, 12, Color.rgb(125,231,204)); badge.setLetterSpacing(.12f);
+        header.addView(badge, new LinearLayout.LayoutParams(0, -2, 1f));
+        TextView quote = text(Quotes.next(this), 11, Color.rgb(165,177,199));
+        quote.setTypeface(getResources().getFont(R.font.tinos_regular)); quote.setGravity(Gravity.END | Gravity.TOP);
+        quote.setMaxLines(4); quote.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        quote.setContentDescription(quote.getText());
+        header.addView(quote, new LinearLayout.LayoutParams(0, -2, 1.15f));
+        TextView title = text("Save what\nmatters.", 36, white); title.setTypeface(Typeface.DEFAULT,Typeface.BOLD); title.setPadding(0,dp(16),0,dp(12)); root.addView(title);
+        TextView intro = text("Klip saves video and audio directly to your device.", 16, muted); intro.setPadding(0,0,0,dp(28)); root.addView(intro);
+        TextView label = text("VIDEO LINK", 12, muted); root.addView(label);
+        link = new EditText(this); link.setSingleLine(false); link.setMinLines(2); link.setTextColor(white); link.setHintTextColor(muted); link.setHint("Paste a link here..."); link.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI); link.setBackground(rounded(Color.rgb(30,39,57),14)); link.setPadding(dp(16),dp(12),dp(16),dp(12)); root.addView(link);
         LinearLayout row = new LinearLayout(this); row.setGravity(Gravity.END); root.addView(row);
-        Button paste = new Button(this); paste.setText("Tempel"); row.addView(paste); paste.setOnClickListener(v -> { android.content.ClipboardManager cb=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE); if(cb.hasPrimaryClip() && cb.getPrimaryClip()!=null) link.setText(cb.getPrimaryClip().getItemAt(0).coerceToText(this)); });
-        inspect = new Button(this); inspect.setText("Cek info video"); row.addView(inspect); inspect.setOnClickListener(v -> inspectVideo());
-        Button browser=new Button(this); browser.setText("Buka browser video"); root.addView(browser); browser.setOnClickListener(v -> { Intent i=new Intent(this, BrowserActivity.class); String u=validUrl(); if(u!=null && u.equals(browserUrl) && browserPageUrl!=null) u=browserPageUrl; if(u!=null) i.putExtra("url",u); else link.setError(null); startActivityForResult(i, 100); });
-        preview = text("Info video akan muncul di sini setelah diperiksa.", 14, muted); preview.setPadding(dp(16),dp(14),dp(16),dp(14)); preview.setBackground(rounded(Color.rgb(25,34,49),14)); root.addView(preview);
+        Button paste = new Button(this); paste.setText("Paste"); row.addView(paste); paste.setOnClickListener(v -> { android.content.ClipboardManager cb=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE); if(cb.hasPrimaryClip() && cb.getPrimaryClip()!=null) link.setText(cb.getPrimaryClip().getItemAt(0).coerceToText(this)); });
+        inspect = new Button(this); inspect.setText("Check video info"); row.addView(inspect); inspect.setOnClickListener(v -> inspectVideo());
+        Button browser=new Button(this); browser.setText("Open video browser"); root.addView(browser); browser.setOnClickListener(v -> { Intent i=new Intent(this, BrowserActivity.class); String u=validUrl(); if(u!=null && u.equals(browserUrl) && browserPageUrl!=null) u=browserPageUrl; if(u!=null) i.putExtra("url",u); else link.setError(null); startActivityForResult(i, 100); });
+        preview = text("Video information will appear here after checking.", 14, muted); preview.setPadding(dp(16),dp(14),dp(16),dp(14)); preview.setBackground(rounded(Color.rgb(25,34,49),14)); root.addView(preview);
         TextView fLabel = text("FORMAT", 12, muted); fLabel.setPadding(0,20,0,4); root.addView(fLabel);
-        format = new Spinner(this); String[] formats={"Video · kualitas terbaik", "Video · maksimal 1080p", "Video · maksimal 720p", "Video · maksimal 480p", "Audio · MP3", "Audio · format asli"}; ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,formats); format.setAdapter(adapter); root.addView(format);
-        start = new Button(this); start.setText("Mulai download"); root.addView(start); start.setOnClickListener(v -> download());
-        cancel = new Button(this); cancel.setText("Batalkan unduhan"); cancel.setVisibility(View.GONE); root.addView(cancel); cancel.setOnClickListener(v -> { cancelRequested=true; cancel.setEnabled(false); show("Membatalkan unduhan..."); DownloadService.cancelDownload(); });
+        format = new Spinner(this); String[] formats={"Video · best quality", "Video · up to 1080p", "Video · up to 720p", "Video · up to 480p", "Audio · MP3", "Audio · original format"}; ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,formats); format.setAdapter(adapter); root.addView(format);
+        start = new Button(this); start.setText("Start download"); root.addView(start); start.setOnClickListener(v -> download());
+        cancel = new Button(this); cancel.setText("Cancel download"); cancel.setVisibility(View.GONE); root.addView(cancel); cancel.setOnClickListener(v -> { cancelRequested=true; cancel.setEnabled(false); show("Canceling download..."); DownloadService.cancelDownload(); });
         progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal); progress.setMax(100); root.addView(progress);
-        status = text("Menyiapkan aplikasi...", 14, muted); status.setTextIsSelectable(true); status.setPadding(0,16,0,0); root.addView(status);
+        status = text("Preparing app...", 14, muted); status.setTextIsSelectable(true); status.setPadding(0,16,0,0); root.addView(status);
         resultList=new LinearLayout(this); resultList.setOrientation(LinearLayout.VERTICAL); resultList.setVisibility(View.GONE);
         resultList.setPadding(dp(16),dp(14),dp(16),dp(14)); resultList.setBackground(rounded(Color.rgb(25,34,49),14)); root.addView(resultList);
-        Button history=new Button(this); history.setText("Riwayat unduhan"); root.addView(history); history.setOnClickListener(v -> showHistory());
-        update = new Button(this); update.setText("Pembaruan mesin"); root.addView(update); update.setOnClickListener(v -> chooseUpdate());
-        TextView note = text("Hasil disimpan di Downloads / Klip. Unduhan dapat berlanjut di latar belakang.", 13, muted); note.setPadding(0,dp(24),0,0); root.addView(note);
+        Button history=new Button(this); history.setText("Download history"); root.addView(history); history.setOnClickListener(v -> showHistory());
+        update = new Button(this); update.setText("Update engine"); root.addView(update); update.setOnClickListener(v -> chooseUpdate());
+        TextView note = text("Files are saved in Downloads / Klip. Downloads can continue in the background.", 13, muted); note.setPadding(0,dp(24),0,0); root.addView(note);
     }
     private void setBusy(boolean busy) { busy=busy || downloading || DownloadService.isRunning(); uiBusy=busy; start.setEnabled(!busy && ready); update.setEnabled(!busy && ready); inspect.setEnabled(!busy && ready); cancel.setVisibility(downloading ? View.VISIBLE : View.GONE); cancel.setEnabled(downloading && !cancelRequested); }
     private void show(String s) { runOnUiThread(() -> status.setText(s)); }
     private String message(Exception e) { return e.getMessage()==null ? e.getClass().getSimpleName() : e.getMessage(); }
     private void chooseUpdate() {
-        new AlertDialog.Builder(this).setTitle("Pembaruan mesin")
-            .setItems(new String[]{"Stable · direkomendasikan", "Nightly · perbaikan terbaru"}, (d, which) -> updateEngine(which==0 ? YoutubeDL.UpdateChannel._STABLE : YoutubeDL.UpdateChannel._NIGHTLY)).show();
+        new AlertDialog.Builder(this).setTitle("Update engine")
+            .setItems(new String[]{"Stable · recommended", "Nightly · latest fixes"}, (d, which) -> updateEngine(which==0 ? YoutubeDL.UpdateChannel._STABLE : YoutubeDL.UpdateChannel._NIGHTLY)).show();
     }
     private void updateEngine(YoutubeDL.UpdateChannel channel) {
         if (!ready) return;
         getSharedPreferences("engine",MODE_PRIVATE).edit().putBoolean("nightly",channel==YoutubeDL.UpdateChannel._NIGHTLY).apply();
-        setBusy(true); show("Memeriksa pembaruan...");
-        worker.execute(() -> { try { Object result=YoutubeDL.getInstance().updateYoutubeDL(getApplicationContext(), channel); getSharedPreferences("engine",MODE_PRIVATE).edit().putLong("last_check",System.currentTimeMillis()).apply(); show("Pembaruan selesai: " + result + "."); } catch(Exception e) { show("Update gagal: " + message(e)); } finally { runOnUiThread(() -> setBusy(false)); } });
+        setBusy(true); show("Checking for updates...");
+        worker.execute(() -> { try { Object result=YoutubeDL.getInstance().updateYoutubeDL(getApplicationContext(), channel); getSharedPreferences("engine",MODE_PRIVATE).edit().putLong("last_check",System.currentTimeMillis()).apply(); show("Update complete: " + result + "."); } catch(Exception e) { show("Update failed: " + message(e)); } finally { runOnUiThread(() -> setBusy(false)); } });
     }
     private String validUrl() {
         String url=link.getText().toString().trim(); Uri parsed=Uri.parse(url);
-        if (!("https".equalsIgnoreCase(parsed.getScheme()) || "http".equalsIgnoreCase(parsed.getScheme())) || parsed.getHost()==null) { link.setError("Masukkan tautan http atau https yang valid"); return null; }
+        if (!("https".equalsIgnoreCase(parsed.getScheme()) || "http".equalsIgnoreCase(parsed.getScheme())) || parsed.getHost()==null) { link.setError("Enter a valid HTTP or HTTPS link"); return null; }
         return url;
     }
     private void inspectVideo() {
         String url=validUrl(); if(url==null) return;
-        setBusy(true); show("Membaca informasi video...");
+        setBusy(true); show("Loading video information...");
         final String ref=url.equals(browserUrl)?browserReferer:null, agent=url.equals(browserUrl)?browserUserAgent:null;
         final String cookies=url.equals(browserUrl)?browserCookies:null, page=url.equals(browserUrl)?browserPageUrl:null, pageCookies=url.equals(browserUrl)?browserPageCookies:null;
         worker.execute(() -> { File cookieFile=null; try {
@@ -176,28 +184,28 @@ public class MainActivity extends Activity {
             long size=Math.max(info.getFileSize(), info.getFileSizeApproximate());
             runOnUiThread(() -> { estimatedUrl=url; estimatedBytes=size; });
             String name=info.getTitle()==null ? "Video" : info.getTitle();
-            int seconds=info.getDuration(); String duration=seconds>0 ? String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60) : "Durasi tidak tersedia";
+            int seconds=info.getDuration(); String duration=seconds>0 ? String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60) : "Duration unavailable";
             String uploader=info.getUploader()==null ? "" : "\n"+info.getUploader();
-            runOnUiThread(() -> preview.setText(name+uploader+"\n"+duration)); show("Info video siap. Pilih format dan mulai download.");
-        } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "Situs ini belum dikenali mesin. Tekan Buka browser video, putar videonya, lalu tekan Media terdeteksi." : "Info belum tersedia: " + message(e) + "\nAnda masih bisa mencoba download langsung."); } finally { if(cookieFile!=null) cookieFile.delete(); runOnUiThread(() -> setBusy(false)); } });
+            runOnUiThread(() -> preview.setText(name+uploader+"\n"+duration)); show("Video information is ready. Choose a format and start the download.");
+        } catch(Exception e) { show(message(e).contains("Unsupported URL") ? "This site is not recognized. Open the video browser, play the video, and select Detected media." : "Information unavailable: " + message(e) + "\nYou can still try downloading directly."); } finally { if(cookieFile!=null) cookieFile.delete(); runOnUiThread(() -> setBusy(false)); } });
     }
     private void displayResults(java.util.List<DownloadService.SavedFile> files) {
         runOnUiThread(() -> {
             resultList.removeAllViews();
-            TextView heading=text("HASIL DOWNLOAD",12,Color.rgb(125,231,204)); resultList.addView(heading);
+            TextView heading=text("DOWNLOADED FILES",12,Color.rgb(125,231,204)); resultList.addView(heading);
             for(DownloadService.SavedFile file:files) {
                 TextView filename=text(file.name,15,Color.rgb(240,243,255)); filename.setPadding(0,dp(10),0,dp(4)); resultList.addView(filename);
-                Button open=new Button(this); open.setText(file.mime.startsWith("video/")?"Putar video":file.mime.startsWith("audio/")?"Putar audio":"Buka file");
+                Button open=new Button(this); open.setText(file.mime.startsWith("video/")?"Play video":file.mime.startsWith("audio/")?"Play audio":"Open file");
                 open.setOnClickListener(v -> {
                     Intent intent=new Intent(Intent.ACTION_VIEW); intent.setDataAndType(file.uri,file.mime);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     try { startActivity(intent); }
-                    catch(android.content.ActivityNotFoundException e) { Toast.makeText(this,"Tidak ada aplikasi yang bisa membuka format ini. File tetap ada di Downloads/Klip.",Toast.LENGTH_LONG).show(); }
-                    catch(SecurityException e) { Toast.makeText(this,"File tidak bisa dibuka. Cek kembali di Downloads/Klip.",Toast.LENGTH_LONG).show(); }
+                    catch(android.content.ActivityNotFoundException e) { Toast.makeText(this,"No app can open this format. Your file is still in Downloads/Klip.",Toast.LENGTH_LONG).show(); }
+                    catch(SecurityException e) { Toast.makeText(this,"Could not open the file. Check Downloads/Klip.",Toast.LENGTH_LONG).show(); }
                 });
                 resultList.addView(open);
             }
-            TextView location=text("Tersimpan di Downloads / Klip",12,Color.rgb(165,177,199)); location.setPadding(0,dp(6),0,0); resultList.addView(location);
+            TextView location=text("Saved in Downloads / Klip",12,Color.rgb(165,177,199)); location.setPadding(0,dp(6),0,0); resultList.addView(location);
             resultList.setVisibility(View.VISIBLE);
             screen.post(() -> screen.smoothScrollTo(0,resultList.getTop()));
         });
@@ -216,25 +224,25 @@ public class MainActivity extends Activity {
                 files.add(new DownloadService.SavedFile(uri,name==null?"File":name,mime==null?"application/octet-stream":mime));
             }
         } catch (RuntimeException e) {
-            Toast.makeText(this,"Riwayat tidak bisa dibaca.",Toast.LENGTH_LONG).show(); return;
+            Toast.makeText(this,"Could not load download history.",Toast.LENGTH_LONG).show(); return;
         }
-        if(files.isEmpty()) { new AlertDialog.Builder(this).setTitle("Riwayat unduhan").setMessage("Belum ada file tersimpan di Downloads/Klip.").setPositiveButton("Tutup",null).show(); return; }
+        if(files.isEmpty()) { new AlertDialog.Builder(this).setTitle("Download history").setMessage("No files have been saved in Downloads/Klip yet.").setPositiveButton("Close",null).show(); return; }
         String[] names=new String[files.size()]; for(int i=0;i<files.size();i++) names[i]=files.get(i).name;
-        new AlertDialog.Builder(this).setTitle("Riwayat unduhan").setItems(names,(dialog,which) -> {
+        new AlertDialog.Builder(this).setTitle("Download history").setItems(names,(dialog,which) -> {
             DownloadService.SavedFile file=files.get(which);
             Intent open=new Intent(Intent.ACTION_VIEW).setDataAndType(file.uri,file.mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             try { startActivity(open); }
-            catch(android.content.ActivityNotFoundException|SecurityException e) { Toast.makeText(this,"File tidak bisa dibuka. Periksa Downloads/Klip.",Toast.LENGTH_LONG).show(); }
-        }).setNegativeButton("Tutup",null).show();
+            catch(android.content.ActivityNotFoundException|SecurityException e) { Toast.makeText(this,"Could not open the file. Check Downloads/Klip.",Toast.LENGTH_LONG).show(); }
+        }).setNegativeButton("Close",null).show();
     }
     private void download() {
         String url=validUrl(); if(url==null || DownloadService.isRunning()) return;
         File target=getExternalFilesDir(null);
         long free=Math.min(getCacheDir().getUsableSpace(), target==null?Long.MAX_VALUE:target.getUsableSpace());
         if(url.equals(estimatedUrl) && estimatedBytes>0 && estimatedBytes>free/2) {
-            new AlertDialog.Builder(this).setTitle("Ruang penyimpanan mungkin tidak cukup")
-                .setMessage("File sementara dan hasil akhir membutuhkan ruang. Ukuran video ini hanya perkiraan.")
-                .setNegativeButton("Batal",null).setPositiveButton("Lanjutkan",(dialog,which) -> startDownload(url)).show();
+            new AlertDialog.Builder(this).setTitle("Storage space may be insufficient")
+                .setMessage("Temporary files and the final download need storage space. The video size is an estimate.")
+                .setNegativeButton("Cancel",null).setPositiveButton("Continue",(dialog,which) -> startDownload(url)).show();
             return;
         }
         startDownload(url);
@@ -247,8 +255,8 @@ public class MainActivity extends Activity {
         intent.putExtra("url",url); intent.putExtra("format",format.getSelectedItemPosition());
         if(url.equals(browserUrl)) { intent.putExtra("ref",browserReferer); intent.putExtra("agent",browserUserAgent); intent.putExtra("cookies",browserCookies); intent.putExtra("page_url",browserPageUrl); intent.putExtra("page_cookies",browserPageCookies); }
         downloading=true; cancelRequested=false; resultList.removeAllViews(); resultList.setVisibility(View.GONE);
-        setBusy(true); progress.setProgress(0); show("Menyiapkan unduhan...");
+        setBusy(true); progress.setProgress(0); show("Preparing download...");
         try { startForegroundService(intent); }
-        catch(RuntimeException e) { downloading=false; show("Tidak bisa memulai unduhan: "+message(e)); setBusy(false); }
+        catch(RuntimeException e) { downloading=false; show("Could not start the download: "+message(e)); setBusy(false); }
     }
 }

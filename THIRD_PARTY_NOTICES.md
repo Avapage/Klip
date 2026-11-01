@@ -7,3 +7,5 @@ Klip uses components maintained by other projects. Consult their current license
 - [FFmpeg](https://ffmpeg.org/legal.html) provides media processing. Licensing obligations depend on the specific FFmpeg build and enabled components.
 
 This file identifies upstream projects; it is not a complete dependency or legal compliance audit. Klip's own code is licensed under GPL-3.0-only; see LICENSE. This does not replace the separate source, license, and notice obligations for bundled dependencies.
+
+- [Tinos](https://github.com/googlefonts/tinos) font, designed by Steve Matteson and distributed under the SIL Open Font License 1.1. The license is included at `app/src/main/assets/fonts/OFL-Tinos.txt`.
