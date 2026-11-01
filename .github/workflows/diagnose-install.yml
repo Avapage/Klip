@@ -1,0 +1,54 @@
+name: Diagnose 0.2.6 APK installation
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-install.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Inspect published APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p apks
+          curl -fL --retry 3 -o apks/arm64.apk https://github.com/Avapage/Klip/releases/download/klip-v0.2.6/Klip-0.2.6-ARM64.apk
+          curl -fL --retry 3 -o apks/universal.apk https://github.com/Avapage/Klip/releases/download/klip-v0.2.6/Klip-0.2.6-Universal.apk
+          echo '974780165adb8b25e40cda08cb1a54385e06a6729f5424b028a5fdcd7694d117  apks/arm64.apk' | sha256sum -c
+          echo 'fc3dc8379f9a8e3327b919cc3bb18a85466acaa83efde8bd26b97383b1d35b86  apks/universal.apk' | sha256sum -c
+          aapt="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          for apk in apks/arm64.apk apks/universal.apk; do
+            echo "APK: $apk"
+            "$aapt" dump badging "$apk" | grep -E '^(package|sdkVersion|targetSdkVersion|native-code|application-label)'
+            "$apksigner" verify --verbose --print-certs "$apk"
+            unzip -Z1 "$apk" | grep '^lib/' | cut -d/ -f2 | sort -u
+          done
+          mkdir native
+          unzip -q apks/arm64.apk 'lib/arm64-v8a/*' -d native
+          for library in native/lib/arm64-v8a/*.so; do
+            echo "ELF: $library"
+            readelf -lW "$library" | grep ' LOAD ' || true
+          done
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            adb install apks/universal.apk
+            adb shell am start -n com.avapage.video/.MainActivity
+            sleep 10
+            adb shell dumpsys activity activities | grep -i com.avapage.video
