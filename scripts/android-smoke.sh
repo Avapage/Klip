@@ -19,6 +19,7 @@ PY
 (cd "$work" && python3 server.py >/dev/null 2>&1) & server_pid=$!
 adb wait-for-device
 adb install -r app/build/outputs/apk/universal/debug/app-universal-debug.apk
+adb shell pm grant com.avapage.video android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 adb shell am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT 'http://10.0.2.2:8765/sample.mp4' -n com.avapage.video/.MainActivity
 # Wait for the engine to initialize and for the start button to become enabled.
 clicked=''
@@ -48,7 +49,7 @@ for attempt in $(seq 1 36); do
   sleep 5
   if adb shell ls /sdcard/Download/Klip/ 2>/dev/null | tr -d '\r' | grep -q '\.mp4$'; then found=1; break; fi
 done
-[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; adb logcat -d -s AndroidRuntime:E; exit 1; }
+[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; adb shell uiautomator dump /sdcard/failure.xml >/dev/null || true; adb shell cat /sdcard/failure.xml || true; adb logcat -d -s AndroidRuntime:E ActivityManager:W; exit 1; }
 adb pull /sdcard/Download/Klip "$work/result" >/dev/null
 output="$(find "$work/result" -type f -name '*.mp4' -print -quit)"
 [[ -n "$output" ]] && ffprobe -v error -show_entries format=duration -of default=nw=1 "$output"
