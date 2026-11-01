@@ -12,7 +12,7 @@ The three latest app versions are listed below. Choose 0.2.6 for the latest chan
 
 | Version | Description | Download |
 | --- | --- | --- |
-| **0.2.6** | Clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
+| **0.2.6** | Background downloads, clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
 | **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
 | **0.2.4** | Earlier version with media detection and download format options. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.4) |
 
@@ -25,6 +25,7 @@ For 0.2.6, choose ARM64 for most modern Android phones, or Universal if you are 
 - Browse websites within the app and detect some direct video, audio, HLS `.m3u8`, and DASH `.mpd` links.
 - Reduce some pop-ups and requests to known advertising domains using the built-in browser protection.
 - Download up to eight HLS/DASH fragments concurrently when the source and downloader support it.
+- Run a user-started download in the background while Android permits the foreground service to run.
 - Open a completed download from the app. Files are saved to **Downloads/Klip**.
 - Cancel downloads and check for yt-dlp updates automatically or manually.
 
@@ -35,7 +36,7 @@ Klip runs the downloader on the device. Actual download speed depends on the sou
 1. Download the APK for your device from the links above.
 2. Open the APK on Android and allow installation from that source if prompted.
 3. Open Klip and paste a supported link, or share a link to the app.
-4. Choose a format and start the download. Keep the app open while downloading.
+4. Choose a format and start the download. A foreground notification appears while the download runs.
 5. Open the completed file from Klip or find it in **Downloads/Klip**.
 
 This is a **debug preview**. If Android rejects an update because its signing key differs, uninstall the previous build and install the new APK. Files already saved in Downloads remain there; app settings and browser sessions are removed when the app is uninstalled.
@@ -62,10 +63,10 @@ Downloads are processed on your device without a Klip download server. When you 
 
 ## Build from source
 
-Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, or use Gradle 8.10.2:
+Open this repository in Android Studio with **JDK 17** and **Android SDK 35**, or use the included Gradle wrapper:
 
 ```bash
-gradle :app:assembleDebug
+./gradlew :app:assembleDebug
 ```
 
-APKs are created in `app/build/outputs/apk/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license.
+APKs are created in `app/build/outputs/apk/debug/`. The project uses [youtubedl-android](https://github.com/yausername/youtubedl-android), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and FFmpeg; each dependency has its own license. See [third-party notices](THIRD_PARTY_NOTICES.md).
