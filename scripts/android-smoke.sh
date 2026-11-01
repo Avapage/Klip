@@ -38,7 +38,11 @@ for e in root.iter('node'):
             if X>x and Y>y: print((x+X)//2,(y+Y)//2)
 PY
 )"
-  if [[ -n "$point" ]]; then adb shell input tap $point; clicked=1; break; fi
+  if [[ -n "$point" ]]; then
+    read -r x y <<< "$point"
+    if (( y >= 580 )); then adb shell input swipe 160 540 160 260 350; continue; fi
+    adb shell input tap "$x" "$y"; clicked=1; break
+  fi
   adb shell input swipe 160 520 160 220 300 || true
 done
 [[ -n "$clicked" ]] || { echo 'Download button did not become available' >&2; exit 1; }
