@@ -6,8 +6,8 @@ android {
         applicationId 'com.avapage.video'
         minSdk 29
         targetSdk 35
-        versionCode 14
-        versionName '0.2.7 R1'
+        versionCode 15
+        versionName '0.2.8'
     }
     signingConfigs {
         debug {

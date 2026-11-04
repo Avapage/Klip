@@ -1,0 +1,89 @@
+name: Publish signed Klip release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: New release tag, e.g. klip-v0.2.8
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build signed APKs
+        env:
+          KLIP_KEYSTORE_BASE64: ${{ secrets.KLIP_KEYSTORE_BASE64 }}
+          KLIP_KEYSTORE_PASSWORD: ${{ secrets.KLIP_KEYSTORE_PASSWORD }}
+          KLIP_KEY_ALIAS: ${{ secrets.KLIP_KEY_ALIAS }}
+          KLIP_KEY_PASSWORD: ${{ secrets.KLIP_KEY_PASSWORD }}
+          KLIP_KEYSTORE_PATH: ${{ runner.temp }}/klip-release.keystore
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^klip-v[0-9]+\.[0-9]+\.[0-9]+(-r[1-3])?$ ]] || { echo 'Invalid release tag' >&2; exit 1; }
+          if gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1 || gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'Tag or release exists. Refusing to overwrite.' >&2; exit 1
+          fi
+          for name in KLIP_KEYSTORE_BASE64 KLIP_KEYSTORE_PASSWORD KLIP_KEY_ALIAS KLIP_KEY_PASSWORD; do
+            [[ -n "${!name}" ]] || { echo "Missing signing secret: $name" >&2; exit 1; }
+          done
+          umask 077
+          trap 'rm -f "$KLIP_KEYSTORE_PATH"' EXIT
+          printf '%s' "$KLIP_KEYSTORE_BASE64" | base64 --decode > "$KLIP_KEYSTORE_PATH"
+          gradle --no-daemon :app:assembleRelease
+      - name: Verify signed APKs
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          tool="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          aapt="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          arm=app/build/outputs/apk/arm64/release/app-arm64-release.apk
+          universal=app/build/outputs/apk/universal/release/app-universal-release.apk
+          expected_version="${RELEASE_TAG#klip-v}"
+          [[ "$expected_version" != *-r* ]] || expected_version="${expected_version/-r/ R}"
+          expected_digest=''
+          for apk in "$arm" "$universal"; do
+            "$aapt" dump badging "$apk" | grep -F "versionName='$expected_version'"
+            info="$("$tool" verify --verbose --print-certs "$apk")"
+            fingerprint="$(printf '%s\n' "$info" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+            [[ -n "$fingerprint" && ( -z "$expected_digest" || "$fingerprint" == "$expected_digest" ) ]]
+            expected_digest="$fingerprint"
+          done
+          mkdir release-apks
+          cp "$arm" "release-apks/Klip-${expected_version// /-}-ARM64.apk"
+          cp "$universal" "release-apks/Klip-${expected_version// /-}-Universal.apk"
+      - name: Publish release
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cat > notes.txt <<'EOF'
+          Klip for Android 10 and newer. Choose ARM64 for most modern phones, or Universal if unsure.
+
+          This release adds a download queue, per-format selection, playlist and Wi-Fi-only options, notification progress and cancellation, Indonesian interface translations, and an app-update check.
+
+          Downloads are saved in Downloads/Klip. The first update from older debug builds may require uninstalling the previous app; this removes app settings and browser sessions but leaves downloaded files in Downloads.
+          EOF
+          gh release create "$RELEASE_TAG" release-apks/*.apk --target "$GITHUB_SHA" --title "Klip ${RELEASE_TAG#klip-v} for Android" --notes-file notes.txt --latest

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_headline">Simpan yang\npenting.</string>
+    <string name="ui_try_direct">\nAnda masih dapat mencoba mengunduh langsung.</string>
+    <string name="ui_000" formatted="false">Siap. Tempel tautan video untuk memulai.</string>
+    <string name="ui_001" formatted="false">Gagal menyiapkan pengunduh:\u0020</string>
+    <string name="ui_003" formatted="false">Klip menyimpan video dan audio langsung ke perangkatmu.</string>
+    <string name="ui_004" formatted="false">TAUTAN VIDEO</string>
+    <string name="ui_005" formatted="false">Tempel tautan di sini...</string>
+    <string name="ui_006" formatted="false">Tempel</string>
+    <string name="ui_007" formatted="false">Cek info video</string>
+    <string name="ui_008" formatted="false">Buka browser video</string>
+    <string name="ui_009" formatted="false">Info video akan muncul di sini setelah diperiksa.</string>
+    <string name="ui_010" formatted="false">FORMAT</string>
+    <string name="ui_011" formatted="false">Video · kualitas terbaik</string>
+    <string name="ui_012" formatted="false">Video · maksimal 1080p</string>
+    <string name="ui_013" formatted="false">Video · maksimal 720p</string>
+    <string name="ui_014" formatted="false">Video · maksimal 480p</string>
+    <string name="ui_015" formatted="false">Audio · MP3</string>
+    <string name="ui_016" formatted="false">Audio · format asli</string>
+    <string name="ui_017" formatted="false">Unduh playlist</string>
+    <string name="ui_018" formatted="false">Hanya Wi-Fi</string>
+    <string name="ui_019" formatted="false">Mulai unduhan</string>
+    <string name="ui_020" formatted="false">Tambahkan ke antrean</string>
+    <string name="ui_021" formatted="false">Batalkan unduhan</string>
+    <string name="ui_022" formatted="false">Membatalkan unduhan...</string>
+    <string name="ui_023" formatted="false">Menyiapkan aplikasi...</string>
+    <string name="ui_024" formatted="false">Riwayat unduhan</string>
+    <string name="ui_025" formatted="false">Perbarui mesin</string>
+    <string name="ui_026" formatted="false">Versi baru tersedia</string>
+    <string name="ui_027" formatted="false">File disimpan di Downloads / Klip. Unduhan dapat berlanjut di latar belakang.</string>
+    <string name="ui_028" formatted="false">Tidak ada browser yang tersedia.</string>
+    <string name="ui_029" formatted="false">Stable · disarankan</string>
+    <string name="ui_030" formatted="false">Nightly · perbaikan terbaru</string>
+    <string name="ui_031" formatted="false">Memeriksa pembaruan...</string>
+    <string name="ui_032" formatted="false">Pembaruan selesai:\u0020</string>
+    <string name="ui_033" formatted="false">Pembaruan gagal:\u0020</string>
+    <string name="ui_034" formatted="false">Masukkan tautan HTTP atau HTTPS yang valid</string>
+    <string name="ui_035" formatted="false">Memuat info video...</string>
+    <string name="ui_036" formatted="false">Durasi tidak tersedia</string>
+    <string name="ui_037" formatted="false">Info video siap. Pilih format dan mulai unduhan.</string>
+    <string name="ui_038" formatted="false">Situs belum dikenali. Buka browser video, putar videonya, lalu pilih Media terdeteksi.</string>
+    <string name="ui_039" formatted="false">Info belum tersedia:\u0020</string>
+    <string name="ui_041" formatted="false">FILE TERUNDUH</string>
+    <string name="ui_042" formatted="false">Putar video</string>
+    <string name="ui_043" formatted="false">Putar audio</string>
+    <string name="ui_044" formatted="false">Buka file</string>
+    <string name="ui_045" formatted="false">Tidak ada aplikasi yang dapat membuka format ini. File tetap ada di Downloads/Klip.</string>
+    <string name="ui_046" formatted="false">File tidak dapat dibuka. Periksa Downloads/Klip.</string>
+    <string name="ui_047" formatted="false">Tersimpan di Downloads / Klip</string>
+    <string name="ui_048" formatted="false">Riwayat unduhan tidak dapat dimuat.</string>
+    <string name="ui_049" formatted="false">Belum ada file tersimpan di Downloads/Klip.</string>
+    <string name="ui_050" formatted="false">Tutup</string>
+    <string name="ui_051" formatted="false">Ruang penyimpanan mungkin tidak cukup</string>
+    <string name="ui_052" formatted="false">File sementara dan hasil akhir membutuhkan ruang. Ukuran video hanya perkiraan.</string>
+    <string name="ui_053" formatted="false">Batal</string>
+    <string name="ui_054" formatted="false">Lanjutkan</string>
+    <string name="ui_055" formatted="false">Menyiapkan unduhan...</string>
+    <string name="ui_056" formatted="false">Tidak dapat memulai unduhan:\u0020</string>
+    <string name="ui_057" formatted="false">Buka</string>
+    <string name="ui_058" formatted="false">Blokir iklan: AKTIF</string>
+    <string name="ui_059" formatted="false">Blokir iklan: NONAKTIF</string>
+    <string name="ui_060" formatted="false">Izinkan iklan di situs ini</string>
+    <string name="ui_061" formatted="false">Blokir iklan di situs ini</string>
+    <string name="ui_062" formatted="false">Putar video, lalu periksa media terdeteksi. Tidak semua situs menampilkan tautan langsung.</string>
+    <string name="ui_063" formatted="false">Media terdeteksi: 0</string>
+    <string name="ui_064" formatted="false">Media terdeteksi:\u0020</string>
+    <string name="ui_065" formatted="false">Alamat tidak valid</string>
+    <string name="ui_066" formatted="false">Belum ada media terdeteksi. Putar video terlebih dahulu.</string>
+    <string name="ui_067" formatted="false">Pilih tautan media</string>
+    <string name="ui_068" formatted="false">File tidak dikenal</string>
+    <string name="ui_069" formatted="false"> · memiliki parameter tautan</string>
+    <string name="ui_070" formatted="false">Unduhan</string>
+    <string name="ui_071" formatted="false">Unduhan berlangsung:\u0020</string>
+    <string name="ui_072" formatted="false">Antrean penuh (10 menunggu).</string>
+    <string name="ui_073" formatted="false">Ditambahkan ke antrean (</string>
+    <string name="ui_074" formatted="false">\u0020menunggu).</string>
+    <string name="ui_075" formatted="false">Memulai unduhan berikutnya (</string>
+    <string name="ui_076" formatted="false">\u0020menunggu)...</string>
+    <string name="ui_077" formatted="false">Tidak dapat memulai unduhan latar belakang.</string>
+    <string name="ui_078" formatted="false">Tidak dapat menyiapkan unduhan</string>
+    <string name="ui_079" formatted="false">Unduhan ini memerlukan Wi-Fi.</string>
+    <string name="ui_080" formatted="false">Tidak dapat menggunakan jaringan Wi-Fi.</string>
+    <string name="ui_081" formatted="false">Wi-Fi tidak lagi tersedia.</string>
+    <string name="ui_082" formatted="false">Dibatalkan</string>
+    <string name="ui_083" formatted="false">Tidak ada file yang dihasilkan</string>
+    <string name="ui_084" formatted="false">Selesai! File disimpan di Downloads/Klip.</string>
+    <string name="ui_085" formatted="false">Sebagian file tersimpan; file lain gagal:\u0020</string>
+    <string name="ui_086" formatted="false">Wi-Fi terputus. Unduhan dibatalkan.</string>
+    <string name="ui_087" formatted="false">Unduhan dibatalkan.</string>
+    <string name="ui_088" formatted="false">Unduhan gagal:\u0020</string>
+    <string name="ui_089" formatted="false">Tidak dapat menulis cookie sementara</string>
+    <string name="ui_090" formatted="false">Ruang penyimpanan tidak cukup untuk menyimpan file.</string>
+    <string name="ui_091" formatted="false">Tidak dapat membuat file</string>
+    <string name="ui_092" formatted="false">Tidak dapat membuka file</string>
+    <string name="ui_093" formatted="false">Tidak dapat menyelesaikan penyimpanan file</string>
+</resources>

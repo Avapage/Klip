@@ -22,6 +22,19 @@ jobs:
         with:
           gradle-version: '8.10.2'
       - run: gradle --no-daemon :app:assembleDebug
+      - name: Verify release signing with a disposable test key
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_key="$RUNNER_TEMP/klip-ci-test.p12"
+          trap 'rm -f "$test_key"' EXIT
+          keytool -genkeypair -keystore "$test_key" -storetype PKCS12 -alias ci -keyalg RSA -keysize 2048 -validity 2 -dname "CN=Klip CI test only" -storepass testonly123 -keypass testonly123 -noprompt
+          export KLIP_KEYSTORE_PATH="$test_key" KLIP_KEYSTORE_PASSWORD=testonly123 KLIP_KEY_ALIAS=ci KLIP_KEY_PASSWORD=testonly123
+          gradle --no-daemon :app:assembleRelease
+          signer="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          for apk in app/build/outputs/apk/arm64/release/*.apk app/build/outputs/apk/universal/release/*.apk; do
+            "$signer" verify --verbose --print-certs "$apk"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: Klip-debug-${{ github.sha }}
