@@ -182,7 +182,16 @@ public class MainActivity extends Activity {
     }
     private void showCachedAppUpdate() {
         String url=getSharedPreferences("app_updates",MODE_PRIVATE).getString("url","");
-        if(url.startsWith("https://github.com/Avapage/Klip/releases/tag/")) {
+        String prefix="https://github.com/Avapage/Klip/releases/tag/";
+        boolean newer=false;
+        try {
+            int[] latest=versionParts(url.startsWith(prefix) ? url.substring(prefix.length()) : "");
+            int[] current=versionParts(getPackageManager().getPackageInfo(getPackageName(),0).versionName);
+            if(latest!=null && current!=null) for(int i=0;i<4;i++) {
+                if(latest[i]!=current[i]) { newer=latest[i]>current[i]; break; }
+            }
+        } catch(Exception ignored) { }
+        if(newer) {
             appUpdate.setVisibility(View.VISIBLE);
             appUpdate.setOnClickListener(v -> {
                 try { startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url))); }
