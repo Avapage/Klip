@@ -41,8 +41,8 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          apks=(app/build/outputs/apk/release/*.apk)
-          (( ${#apks[@]} == 4 )) || { echo 'Expected four APKs' >&2; exit 1; }
+          apks=(app/build/outputs/apk/arm64/release/*.apk app/build/outputs/apk/universal/release/*.apk)
+          (( ${#apks[@]} == 2 )) || { echo 'Expected ARM64 and Universal APKs' >&2; exit 1; }
           tool="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
           [[ -n "$tool" ]] || { echo 'apksigner not found' >&2; exit 1; }
           expected=""
@@ -54,12 +54,13 @@ jobs:
             [[ -z "$expected" || "$fingerprint" == "$expected" ]] || { echo 'APK signing certificates differ' >&2; exit 1; }
             expected="$fingerprint"
           done
-          (cd app/build/outputs/apk/release && sha256sum ./*.apk > SHA256SUMS.txt)
+          sha256sum "${apks[@]}" > app/build/outputs/apk/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Klip-signed-${{ github.sha }}
           path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/release/SHA256SUMS.txt
+            app/build/outputs/apk/arm64/release/*.apk
+            app/build/outputs/apk/universal/release/*.apk
+            app/build/outputs/apk/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30

@@ -4,6 +4,7 @@ work="$(mktemp -d)"
 server_pid=''
 trap '[[ -z "$server_pid" ]] || kill "$server_pid" 2>/dev/null || true; rm -rf "$work"' EXIT
 ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=480x270:rate=24 -t 20 -c:v libx264 -preset ultrafast -y "$work/sample.mp4"
+cp "$work/sample.mp4" "$work/second.mp4"
 cat > "$work/server.py" <<'PY'
 import http.server, time
 class Slow(http.server.SimpleHTTPRequestHandler):
@@ -13,7 +14,7 @@ class Slow(http.server.SimpleHTTPRequestHandler):
             if not data: break
             output.write(data)
             output.flush()
-            time.sleep(.25)
+            time.sleep(.35)
 http.server.ThreadingHTTPServer(('0.0.0.0',8765),Slow).serve_forever()
 PY
 (cd "$work" && python3 -u server.py >"$work/server.log" 2>&1) & server_pid=$!
@@ -46,6 +47,26 @@ PY
   adb shell input swipe 160 520 160 220 300 || true
 done
 [[ -n "$clicked" ]] || { echo 'Download button did not become available' >&2; exit 1; }
+adb shell am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT 'http://10.0.2.2:8765/second.mp4' -n com.avapage.video/.MainActivity
+queued=''
+for attempt in $(seq 1 12); do
+  sleep 2
+  adb shell uiautomator dump /sdcard/queue.xml >/dev/null
+  adb pull /sdcard/queue.xml "$work/queue.xml" >/dev/null 2>&1
+  point="$(python3 - "$work/queue.xml" <<'PY'
+import re, sys, xml.etree.ElementTree as E
+for e in E.parse(sys.argv[1]).iter('node'):
+    if e.get('text','').lower()=='add to queue' and e.get('enabled')=='true':
+        m=re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',e.get('bounds',''))
+        if m:
+            x,y,X,Y=map(int,m.groups())
+            if X>x and Y>y and (y+Y)//2<580: print((x+X)//2,(y+Y)//2)
+PY
+)"
+  if [[ -n "$point" ]]; then adb shell input tap $point; queued=1; break; fi
+  adb shell input swipe 160 520 160 220 300
+done
+[[ -n "$queued" ]] || { echo 'Could not add a second download to the queue' >&2; exit 1; }
 sleep 5
 adb shell uiautomator dump /sdcard/before-home.xml >/dev/null || true
 adb shell cat /sdcard/before-home.xml || true
@@ -53,9 +74,10 @@ adb shell input keyevent KEYCODE_HOME
 found=''
 for attempt in $(seq 1 36); do
   sleep 5
-  if adb shell ls /sdcard/Download/Klip/ 2>/dev/null | tr -d '\r' | grep -q '\.mp4$'; then found=1; break; fi
+  listing="$(adb shell ls /sdcard/Download/Klip/ 2>/dev/null | tr -d '\r' || true)"
+  if printf '%s\n' "$listing" | grep -qi 'sample.*\.mp4$' && printf '%s\n' "$listing" | grep -qi 'second.*\.mp4$'; then found=1; break; fi
 done
-[[ -n "$found" ]] || { echo 'No MP4 appeared in Downloads/Klip after backgrounding' >&2; cat "$work/server.log" || true; adb shell am start -n com.avapage.video/.MainActivity || true; sleep 3; adb shell uiautomator dump /sdcard/failure.xml >/dev/null || true; adb shell cat /sdcard/failure.xml || true; adb logcat -d -s AndroidRuntime:E ActivityManager:W; exit 1; }
+[[ -n "$found" ]] || { echo 'Both queued MP4 files did not appear in Downloads/Klip' >&2; cat "$work/server.log" || true; adb shell am start -n com.avapage.video/.MainActivity || true; sleep 3; adb shell uiautomator dump /sdcard/failure.xml >/dev/null || true; adb shell cat /sdcard/failure.xml || true; adb logcat -d -s AndroidRuntime:E ActivityManager:W; exit 1; }
 adb pull /sdcard/Download/Klip "$work/result" >/dev/null
 output="$(find "$work/result" -type f -name '*.mp4' -print -quit)"
 [[ -n "$output" ]] && ffprobe -v error -show_entries format=duration -of default=nw=1 "$output"
@@ -84,4 +106,4 @@ done
 adb shell uiautomator dump /sdcard/history-dialog.xml >/dev/null
 adb pull /sdcard/history-dialog.xml "$work/history-dialog.xml" >/dev/null 2>&1
 grep -qi 'sample.*mp4' "$work/history-dialog.xml" || { echo 'Downloaded file missing from history' >&2; cat "$work/history-dialog.xml"; exit 1; }
-echo 'Background download and persistent history smoke test passed'
+echo 'Queued background downloads and persistent history smoke test passed'

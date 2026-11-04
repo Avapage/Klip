@@ -30,6 +30,8 @@ For 0.2.7 R1, choose ARM64 for most modern Android phones, or Universal if you a
 - View up to 20 recent Klip files saved in Downloads/Klip after restarting the app. Removed files no longer appear.
 - See a different short saying from a collection of 100 each time the app is opened.
 - Cancel downloads and check for yt-dlp updates automatically or manually.
+- In the development version, queue up to ten downloads, choose reported formats, download playlists, and restrict a transfer to Wi-Fi.
+- Indonesian translations follow the device language. The built-in browser can disable ad blocking for an individual site.
 
 Klip runs the downloader on the device. Actual download speed depends on the source and your connection. Not every site, media format, or video is supported.
 
@@ -62,6 +64,8 @@ DRM-protected content and some login-dependent videos may not work. Download onl
 ## Privacy
 
 Downloads are processed on your device without a Klip download server. When you select a media link in the browser, Klip can pass the observed referrer, user agent, and cookies applicable to the media host to yt-dlp. A temporary cookie file is stored in the app's private cache and is removed when the download process completes or is canceled. The app contacts source websites and update providers over the internet.
+
+The development version checks the latest Klip release on GitHub when the app opens, at most once per day after a successful check. Queue entries exist in memory and are lost if Android stops the process. Wi-Fi-only downloads bind to the active Wi-Fi network and are canceled if that network disconnects.
 
 ## Build from source
 

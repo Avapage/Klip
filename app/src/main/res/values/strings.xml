@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_headline">Save what\nmatters.</string>
+    <string name="ui_try_direct">\nYou can still try downloading directly.</string>
+    <string name="ui_000" formatted="false">Ready. Paste a video link to get started.</string>
+    <string name="ui_001" formatted="false">Could not initialize the downloader:\u0020</string>
+    <string name="ui_003" formatted="false">Klip saves video and audio directly to your device.</string>
+    <string name="ui_004" formatted="false">VIDEO LINK</string>
+    <string name="ui_005" formatted="false">Paste a link here...</string>
+    <string name="ui_006" formatted="false">Paste</string>
+    <string name="ui_007" formatted="false">Check video info</string>
+    <string name="ui_008" formatted="false">Open video browser</string>
+    <string name="ui_009" formatted="false">Video information will appear here after checking.</string>
+    <string name="ui_010" formatted="false">FORMAT</string>
+    <string name="ui_011" formatted="false">Video · best quality</string>
+    <string name="ui_012" formatted="false">Video · up to 1080p</string>
+    <string name="ui_013" formatted="false">Video · up to 720p</string>
+    <string name="ui_014" formatted="false">Video · up to 480p</string>
+    <string name="ui_015" formatted="false">Audio · MP3</string>
+    <string name="ui_016" formatted="false">Audio · original format</string>
+    <string name="ui_017" formatted="false">Download playlist</string>
+    <string name="ui_018" formatted="false">Wi-Fi only</string>
+    <string name="ui_019" formatted="false">Start download</string>
+    <string name="ui_020" formatted="false">Add to queue</string>
+    <string name="ui_021" formatted="false">Cancel download</string>
+    <string name="ui_022" formatted="false">Canceling download...</string>
+    <string name="ui_023" formatted="false">Preparing app...</string>
+    <string name="ui_024" formatted="false">Download history</string>
+    <string name="ui_025" formatted="false">Update engine</string>
+    <string name="ui_026" formatted="false">New version available</string>
+    <string name="ui_027" formatted="false">Files are saved in Downloads / Klip. Downloads can continue in the background.</string>
+    <string name="ui_028" formatted="false">No browser is available.</string>
+    <string name="ui_029" formatted="false">Stable · recommended</string>
+    <string name="ui_030" formatted="false">Nightly · latest fixes</string>
+    <string name="ui_031" formatted="false">Checking for updates...</string>
+    <string name="ui_032" formatted="false">Update complete:\u0020</string>
+    <string name="ui_033" formatted="false">Update failed:\u0020</string>
+    <string name="ui_034" formatted="false">Enter a valid HTTP or HTTPS link</string>
+    <string name="ui_035" formatted="false">Loading video information...</string>
+    <string name="ui_036" formatted="false">Duration unavailable</string>
+    <string name="ui_037" formatted="false">Video information is ready. Choose a format and start the download.</string>
+    <string name="ui_038" formatted="false">This site is not recognized. Open the video browser, play the video, and select Detected media.</string>
+    <string name="ui_039" formatted="false">Information unavailable:\u0020</string>
+    <string name="ui_041" formatted="false">DOWNLOADED FILES</string>
+    <string name="ui_042" formatted="false">Play video</string>
+    <string name="ui_043" formatted="false">Play audio</string>
+    <string name="ui_044" formatted="false">Open file</string>
+    <string name="ui_045" formatted="false">No app can open this format. Your file is still in Downloads/Klip.</string>
+    <string name="ui_046" formatted="false">Could not open the file. Check Downloads/Klip.</string>
+    <string name="ui_047" formatted="false">Saved in Downloads / Klip</string>
+    <string name="ui_048" formatted="false">Could not load download history.</string>
+    <string name="ui_049" formatted="false">No files have been saved in Downloads/Klip yet.</string>
+    <string name="ui_050" formatted="false">Close</string>
+    <string name="ui_051" formatted="false">Storage space may be insufficient</string>
+    <string name="ui_052" formatted="false">Temporary files and the final download need storage space. The video size is an estimate.</string>
+    <string name="ui_053" formatted="false">Cancel</string>
+    <string name="ui_054" formatted="false">Continue</string>
+    <string name="ui_055" formatted="false">Preparing download...</string>
+    <string name="ui_056" formatted="false">Could not start the download:\u0020</string>
+    <string name="ui_057" formatted="false">Go</string>
+    <string name="ui_058" formatted="false">Ad blocking: ON</string>
+    <string name="ui_059" formatted="false">Ad blocking: OFF</string>
+    <string name="ui_060" formatted="false">Allow ads on this site</string>
+    <string name="ui_061" formatted="false">Block ads on this site</string>
+    <string name="ui_062" formatted="false">Play the video, then check detected media. Not all sites expose direct links.</string>
+    <string name="ui_063" formatted="false">Detected media: 0</string>
+    <string name="ui_064" formatted="false">Detected media:\u0020</string>
+    <string name="ui_065" formatted="false">Invalid address</string>
+    <string name="ui_066" formatted="false">No media detected yet. Play the video first.</string>
+    <string name="ui_067" formatted="false">Choose a media link</string>
+    <string name="ui_068" formatted="false">Unknown file</string>
+    <string name="ui_069" formatted="false"> · query parameters present</string>
+    <string name="ui_070" formatted="false">Downloads</string>
+    <string name="ui_071" formatted="false">Download in progress:\u0020</string>
+    <string name="ui_072" formatted="false">Queue is full (10 waiting).</string>
+    <string name="ui_073" formatted="false">Added to queue (</string>
+    <string name="ui_074" formatted="false">\u0020waiting).</string>
+    <string name="ui_075" formatted="false">Starting next download (</string>
+    <string name="ui_076" formatted="false">\u0020waiting)...</string>
+    <string name="ui_077" formatted="false">Could not start a background download.</string>
+    <string name="ui_078" formatted="false">Could not prepare the download</string>
+    <string name="ui_079" formatted="false">Wi-Fi is required for this download.</string>
+    <string name="ui_080" formatted="false">Could not use the Wi-Fi network.</string>
+    <string name="ui_081" formatted="false">Wi-Fi is no longer available.</string>
+    <string name="ui_082" formatted="false">Canceled</string>
+    <string name="ui_083" formatted="false">No file was produced</string>
+    <string name="ui_084" formatted="false">Done! File saved in Downloads/Klip.</string>
+    <string name="ui_085" formatted="false">Some files were saved; others failed:\u0020</string>
+    <string name="ui_086" formatted="false">Wi-Fi disconnected. Download canceled.</string>
+    <string name="ui_087" formatted="false">Download canceled.</string>
+    <string name="ui_088" formatted="false">Download failed:\u0020</string>
+    <string name="ui_089" formatted="false">Could not write temporary cookies</string>
+    <string name="ui_090" formatted="false">Not enough storage space to save the file.</string>
+    <string name="ui_091" formatted="false">Could not create the file</string>
+    <string name="ui_092" formatted="false">Could not open the file</string>
+    <string name="ui_093" formatted="false">Could not finish saving the file</string>
+</resources>
