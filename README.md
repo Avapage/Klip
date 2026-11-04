@@ -2,21 +2,21 @@
 
 Klip is an Android video and audio downloader that uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) and FFmpeg to save supported media directly to your device. Paste a link or use the built-in browser to find supported video and stream URLs.
 
-**Android 10 or newer** · No Klip download server · Free to use · Preview build
+**Android 10 or newer** · No Klip download server · Free to use
 
-[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7-r1) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
+[Download the Android APK](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.8) · [Installation](#installation) · [Features](#features) · [Troubleshooting](#troubleshooting)
 
 ## Download Klip for Android
 
-The three latest app versions are listed below. Choose 0.2.7 R1 for the latest changes.
+The three latest app versions are listed below. Choose 0.2.8 for the latest changes.
 
 | Version | Description | Download |
 | --- | --- | --- |
+| **0.2.8** | Signed APKs, download queue, format selection, playlist and Wi-Fi-only options, progress notifications, and Indonesian translations. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.8) |
 | **0.2.7 R1** | Adds download history, a GPL-3.0 license, an English interface, and rotating quotes, with ARM64 and Universal APKs. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.7-r1) |
 | **0.2.6** | Background downloads, clearer media-source labels, system-bar spacing, safer browser handoff, and a storage-space check. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.6) |
-| **0.2.5** | R4 adds a completed-download card; R3 adds parallel HLS/DASH fragment downloads. | [Release and APKs](https://github.com/Avapage/Klip/releases/tag/klip-v0.2.5) |
 
-For 0.2.7 R1, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
+For 0.2.8, choose ARM64 for most modern Android phones, or Universal if you are unsure. Older releases may offer additional APKs.
 
 ## Features
 
@@ -30,7 +30,7 @@ For 0.2.7 R1, choose ARM64 for most modern Android phones, or Universal if you a
 - View up to 20 recent Klip files saved in Downloads/Klip after restarting the app. Removed files no longer appear.
 - See a different short saying from a collection of 100 each time the app is opened.
 - Cancel downloads and check for yt-dlp updates automatically or manually.
-- In the development version, queue up to ten downloads, choose reported formats, download playlists, and restrict a transfer to Wi-Fi.
+- Queue up to ten downloads, choose reported formats, download playlists, and restrict a transfer to Wi-Fi.
 - Indonesian translations follow the device language. The built-in browser can disable ad blocking for an individual site.
 
 Klip runs the downloader on the device. Actual download speed depends on the source and your connection. Not every site, media format, or video is supported.
@@ -43,7 +43,7 @@ Klip runs the downloader on the device. Actual download speed depends on the sou
 4. Choose a format and start the download. A foreground notification appears while the download runs.
 5. Open the completed file from Klip or find it in **Downloads/Klip**.
 
-This is a **debug preview**. If Android rejects an update because its signing key differs, uninstall the previous build and install the new APK. Files already saved in Downloads remain there; app settings and browser sessions are removed when the app is uninstalled.
+Klip 0.2.8 is signed with a new release key. If Android rejects an update from an older debug build because its signing key differs, uninstall the previous build and install the new APK. Files already saved in Downloads remain there; app settings and browser sessions are removed when the app is uninstalled.
 
 ## Downloading from websites
 
@@ -65,7 +65,7 @@ DRM-protected content and some login-dependent videos may not work. Download onl
 
 Downloads are processed on your device without a Klip download server. When you select a media link in the browser, Klip can pass the observed referrer, user agent, and cookies applicable to the media host to yt-dlp. A temporary cookie file is stored in the app's private cache and is removed when the download process completes or is canceled. The app contacts source websites and update providers over the internet.
 
-The development version checks the latest Klip release on GitHub when the app opens, at most once per day after a successful check. Queue entries exist in memory and are lost if Android stops the process. Wi-Fi-only downloads bind to the active Wi-Fi network and are canceled if that network disconnects.
+Klip checks the latest release on GitHub when the app opens, at most once per day after a successful check. Queue entries exist in memory and are lost if Android stops the process. Wi-Fi-only downloads bind to the active Wi-Fi network and are canceled if that network disconnects.
 
 ## Build from source
 
