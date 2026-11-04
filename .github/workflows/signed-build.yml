@@ -43,14 +43,14 @@ jobs:
           shopt -s nullglob
           apks=(app/build/outputs/apk/arm64/release/*.apk app/build/outputs/apk/universal/release/*.apk)
           (( ${#apks[@]} == 2 )) || { echo 'Expected ARM64 and Universal APKs' >&2; exit 1; }
-          tool="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
+          tool="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           [[ -n "$tool" ]] || { echo 'apksigner not found' >&2; exit 1; }
           expected=""
           for apk in "${apks[@]}"; do
             output="$("$tool" verify --verbose --print-certs "$apk")"
             printf '%s\n' "$output"
-            fingerprint="$(printf '%s\n' "$output" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
-            [[ -n "$fingerprint" ]] || { echo 'Missing certificate fingerprint' >&2; exit 1; }
+            fingerprint="$(printf '%s\n' "$output" | sed -nE 's/^(Signer #1|V[0-9.]+ Signer):? certificate SHA-256 digest: //p' | sort -u)"
+            [[ "$fingerprint" =~ ^[a-fA-F0-9]{64}$ ]] || { echo 'Missing certificate fingerprint' >&2; exit 1; }
             [[ -z "$expected" || "$fingerprint" == "$expected" ]] || { echo 'APK signing certificates differ' >&2; exit 1; }
             expected="$fingerprint"
           done
